@@ -1,8 +1,9 @@
+# .github/workflows/deploy.yml
 name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -10,34 +11,54 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Vérifier les fichiers
+        run: |
+          echo "📁 Fichiers présents :"
+          ls -la
+          echo "📄 Contenu HTML disponible :"
+          find . -name "*.html" -o -name "*.css" -o -name "*.js" | head -10
+      
+      # Optionnel : si tu veux builder ton app Node.js d'abord
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '18'
+      # 
+      # - name: Install dependencies
+      #   run: npm install
+      # 
+      # - name: Build app (si tu as un script build)
+      #   run: npm run build || echo "Pas de script build"
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # IMPORTANT : on déploie TOUT le repo
+          # car index.html est à la racine
+          path: '.'
+          # Si tu veux exclure certains dossiers, tu peux créer un .github/pages-filters.json
+      
+  deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    
+    runs-on: ubuntu-latest
+    needs: build
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    
-    - name: Setup Pages
-      uses: actions/configure-pages@v4
-    
-    - name: Create simple site
-      run: |
-        echo '<!DOCTYPE html><html><head><title>To-DoStud</title></head><body><h1>✅ Déploiement CD Réussi!</h1></body></html>' > index.html
-    
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: '.'
-    
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
-    
-    - name: Notification
-      run: |
-        echo "✅ CD Deployment Successful!"
-        echo "🌐 Site URL: ${{ steps.deployment.outputs.page_url }}"
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
