@@ -1,22 +1,53 @@
-name: Deploy to GitHub Pages
+name: 🚀 Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    
-    - name: Create simple site
-      run: |
-        echo '<!DOCTYPE html><html><head><title>To-DoStud</title></head><body><h1>✅ Déploiement CD réussi!</h1></body></html>' > index.html
-    
-    - name: Deploy
-      uses: peaceiris/actions-gh-pages@v3
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./
+        persist-credentials: false
+    
+    - name: Create deployment directory
+      run: |
+        echo "📁 Creating deployment files..."
+        mkdir -p deploy
+        
+        cat > deploy/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>To-DoStud - DevOps Project</title>
+            <style>
+                body { font-family: Arial; padding: 40px; text-align: center; }
+                .success { color: green; font-size: 24px; }
+            </style>
+        </head>
+        <body>
+            <h1>🚀 To-DoStud Déployé !</h1>
+            <p class="success">✅ Déploiement Continuous Delivery (CD) réussi</p>
+            <p>Ce site est déployé automatiquement via GitHub Actions</p>
+            <p><strong>Projet DevOps CI/CD complet :</strong></p>
+            <ul style="list-style: none; padding: 0;">
+                <li>✅ CI : Tests automatisés</li>
+                <li>✅ Docker : Build automatique</li>
+                <li>✅ CD : Déploiement automatique</li>
+            </ul>
+        </body>
+        </html>
+        EOF
+        
+        echo "✅ HTML file created"
+    
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        branch: gh-pages
+        folder: deploy
+        clean: true
