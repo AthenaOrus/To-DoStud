@@ -1,5 +1,8 @@
-node_modules/
-npm-debug.log*
-.env
-.vscode/
+node_modules
+npm-debug.log
+.git
+.github
 .DS_Store
+.env
+.gitignore
+README.md
