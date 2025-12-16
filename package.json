@@ -5,13 +5,11 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node src/index.js",
     "test": "node tests/test.js",
-    "build": "echo '🚀 Build terminé!' && date"
+    "build": "mkdir -p dist && cp -r src/* dist/ && cp package.json dist/ && echo 'Application built in dist/'"
   },
   "dependencies": {},
   "devDependencies": {},
-  "keywords": ["todo", "ci-cd", "devops", "github-actions"],
   "author": "AthenaOrus",
   "license": "MIT"
 }

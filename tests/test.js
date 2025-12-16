@@ -1,30 +1,31 @@
-// Simple test file for CI/CD
-console.log("Running CI/CD tests...");
+// Tests unitaires pour l'application To-DoStud
+const assert = require('assert');
 
-// Test 1: Check if 1+1=2
-const test1 = 1 + 1 === 2;
-console.log(`Test 1 (1+1=2): ${test1 ? 'PASS' : 'FAIL'}`);
+console.log('=== DEBUT DES TESTS UNITAIRES ===');
 
-// Test 2: Check if file structure exists
+// Test 1: Test de base
+console.log('Test 1: Vérification mathématique');
+assert.strictEqual(1 + 1, 2, '1+1 doit égaler 2');
+
+// Test 2: Vérification du module
+console.log('Test 2: Vérification de la structure');
 const fs = require('fs');
-const test2 = fs.existsSync('src/index.js');
-console.log(`Test 2 (src/index.js exists): ${test2 ? 'PASS' : 'FAIL'}`);
+assert.ok(fs.existsSync('src/index.js'), 'src/index.js doit exister');
+assert.ok(fs.existsSync('package.json'), 'package.json doit exister');
 
-// Test 3: Check package.json
-const test3 = fs.existsSync('package.json');
-console.log(`Test 3 (package.json exists): ${test3 ? 'PASS' : 'FAIL'}`);
+// Test 3: Test de l'application
+console.log('Test 3: Test de l\'application');
+const app = require('../src/index.js');
+assert.ok(app.tasks, 'L\'application doit avoir des tâches');
+assert.ok(Array.isArray(app.tasks), 'Les tâches doivent être un tableau');
+assert.ok(app.server, 'L\'application doit avoir un serveur');
 
-// Summary
-const allTests = [test1, test2, test3];
-const passed = allTests.filter(t => t).length;
-const total = allTests.length;
+// Test 4: Vérification des données
+console.log('Test 4: Vérification des données');
+assert.ok(app.tasks.length > 0, 'Il doit y avoir au moins une tâche');
+const firstTask = app.tasks[0];
+assert.ok(firstTask.id, 'La tâche doit avoir un id');
+assert.ok(firstTask.name, 'La tâche doit avoir un nom');
 
-console.log(`\nSummary: ${passed}/${total} tests passed`);
-
-if (passed === total) {
-  console.log("SUCCESS: All tests passed!");
-  process.exit(0);
-} else {
-  console.log("FAILURE: Some tests failed");
-  process.exit(1);
-}
+console.log('=== TESTS TERMINÉS AVEC SUCCÈS ===');
+console.log('✅ Tous les tests sont passés');

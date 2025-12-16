@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI Pipeline DevOps
 
 on:
   push:
@@ -7,51 +7,58 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  test-and-build:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
+    # 1. Checkout du code
+    - name: Checkout repository
       uses: actions/checkout@v4
     
+    # 2. Installer Node.js
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20.x'
+        cache: 'npm'
     
-    - name: Check files
-      run: |
-        echo "Checking files..."
-        ls -la
-        echo ""
-        if [ -f "package-lock.json" ]; then
-          echo "package-lock.json found"
-        else
-          echo "Creating package-lock.json..."
-          echo '{"name": "todo-stud", "version": "1.0.0"}' > package.json
-          npm install
-        fi
-    
+    # 3. Installer les dépendances
     - name: Install dependencies
-      run: npm install
-    
-    - name: Run tests
       run: |
-        if [ -f "tests/test.js" ]; then
-          node tests/test.js
-        else
-          echo "No test file found, skipping tests"
-        fi
+        echo "Installing dependencies..."
+        npm ci
     
+    # 4. Lancer les tests unitaires
+    - name: Run unit tests
+      run: |
+        echo "Running tests..."
+        npm test
+        echo "Tests completed"
+    
+    # 5. Build l'application
     - name: Build application
       run: |
-        if [ -f "src/index.js" ]; then
-          echo "Building..."
-          node -c src/index.js
-          echo "Build successful"
-        else
-          echo "No source file found"
-        fi
+        echo "Building application..."
+        npm run build
+        echo "Build completed"
     
-    - name: Success
-      run: echo "CI Pipeline completed successfully"
+    # 6. Générer un artefact (fichier zip)
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: todo-stud-build
+        path: |
+          src/
+          package.json
+          package-lock.json
+        retention-days: 5
+    
+    # 7. Logs de build
+    - name: Display build logs
+      run: |
+        echo "=== BUILD LOGS ==="
+        echo "Build date: $(date)"
+        echo "Branch: ${{ github.ref }}"
+        echo "Commit: ${{ github.sha }}"
+        echo "Triggered by: ${{ github.actor }}"
+        echo "=================="
