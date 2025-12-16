@@ -1,25 +1,27 @@
-# Étape de build
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-# Étape de production
+# Image de base
 FROM node:20-alpine
+
+# Répertoire de travail
 WORKDIR /app
 
-# Créer utilisateur non-root
+# Copier les fichiers
+COPY package*.json ./
+
+# Installer les dépendances SANS lancer l'app
+RUN npm ci --only=production
+
+# Copier le code source
+COPY src/ ./src/
+
+# Créer un utilisateur non-root
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 USER nodejs
 
-# Copier depuis le builder
-COPY --from=builder /app/src ./src
-COPY --from=builder /app/package*.json ./
-
-# Port
+# Port exposé
 EXPOSE 3000
 
-# Commande
+# Variable pour éviter le démarrage pendant le build
+ENV NODE_ENV=production
+
+# Commande de démarrage
 CMD ["node", "src/index.js"]
