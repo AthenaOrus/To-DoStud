@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-DoStud - Projet DevOps</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        h1 { 
+            color: #4a5568; 
+            font-size: 2.5em; 
+            margin-bottom: 10px; 
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 1.2em;
+        }
+        
+        .section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border-left: 5px solid #4299e1;
+        }
+        
+        .task-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .task-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .status-done {
+            color: #38a169;
+            font-weight: bold;
+        }
+        
+        .status-todo {
+            color: #e53e3e;
+            font-weight: bold;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin: 0 10px;
+        }
+        
+        .badge-success { background: #c6f6d5; color: #22543d; }
+        .badge-warning { background: #feebc8; color: #744210; }
+        .badge-info { background: #bee3f8; color: #2a4365; }
+        
+        .links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            background: #4299e1;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(66, 153, 225, 0.3);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            color: #718096;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 To-DoStud Project</h1>
+            <p class="subtitle">Mise en place d'un pipeline CI/CD complet avec GitHub Actions</p>
+        </header>
+        
+        <div class="section">
+            <h2>🎯 Objectif du TP DevOps</h2>
+            <p>Mettre en œuvre les bases du DevOps en utilisant GitHub pour versionner le code, automatiser les tests, construire et publier une image Docker, et déployer automatiquement une application.</p>
+        </div>
+        
+        <div class="section">
+            <h2>✅ Progression du projet</h2>
+            <ul class="task-list">
+                <li class="task-item">
+                    <span class="status-done">✓</span>
+                    <span style="flex-grow: 1; margin-left: 10px;">Étape 1 : Initialiser le dépôt GitHub avec branches main/dev</span>
+                    <span class="badge badge-success">Terminé</span>
+                </li>
+                <li class="task-item">
+                    <span class="status-done">✓</span>
+                    <span style="flex-grow: 1; margin-left: 10px;">Étape 2 : Mettre en place le workflow CI avec tests automatisés</span>
+                    <span class="badge badge-success">Terminé</span>
+                </li>
+                <li class="task-item">
+                    <span class="status-done">✓</span>
+                    <span style="flex-grow: 1; margin-left: 10px;">Étape 3 : Dockeriser l'application avec Dockerfile</span>
+                    <span class="badge badge-success">Terminé</span>
+                </li>
+                <li class="task-item">
+                    <span class="status-done">✓</span>
+                    <span style="flex-grow: 1; margin-left: 10px;">Étape 4 : Publier automatiquement l'image Docker</span>
+                    <span class="badge badge-success">Terminé</span>
+                </li>
+                <li class="task-item">
+                    <span class="status-todo">⏳</span>
+                    <span style="flex-grow: 1; margin-left: 10px;">Étape 5 : Déploiement automatique sur GitHub Pages</span>
+                    <span class="badge badge-warning">En cours</span>
+                </li>
+                <li class="task-item">
+                    <span class="status-todo">○</span>
+                    <span style="flex-grow: 1; margin-left: 10px;">Étape 6 : Ajouter des badges et documentation</span>
+                    <span class="badge badge-info">À venir</span>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>🔗 Liens du projet</h2>
+            <div class="links">
+                <a href="https://github.com/AthenaOrus/To-DoStud" class="btn" target="_blank">📁 Code Source</a>
+                <a href="https://github.com/AthenaOrus/To-DoStud/actions" class="btn" target="_blank">⚡ Pipeline CI/CD</a>
+                <a href="#" class="btn" id="deploy-link">🚀 Site Déployé (bientôt)</a>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🛠️ Technologies utilisées</h2>
+            <p>
+                <span class="badge badge-info">Git</span>
+                <span class="badge badge-info">GitHub Actions</span>
+                <span class="badge badge-info">Node.js</span>
+                <span class="badge badge-info">Docker</span>
+                <span class="badge badge-info">GitHub Pages</span>
+                <span class="badge badge-info">HTML/CSS</span>
+            </p>
+        </div>
+        
+        <footer>
+            <p>Projet réalisé dans le cadre d'un TP DevOps - AthenaOrus</p>
+            <p>Dernière mise à jour : <span id="current-date"></span></p>
+        </footer>
+    </div>
+    
+    <script>
+        // Afficher la date actuelle
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('fr-FR');
+        
+        // Mettre à jour le lien de déploiement
+        const repoName = window.location.pathname.split('/')[1] || 'To-DoStud';
+        const deployLink = document.getElementById('deploy-link');
+        deployLink.href = `https://athenaorus.github.io/${repoName}/`;
+        deployLink.textContent = '🚀 Site Déployé';
+    </script>
+</body>
+</html>
