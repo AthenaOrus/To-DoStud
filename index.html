@@ -3,208 +3,1485 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>To-DoStud - Projet DevOps</title>
+    <title>Guide CI/CD avec GitHub Actions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            line-height: 1.6; 
-            color: #333; 
-            max-width: 1000px; 
-            margin: 0 auto; 
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+        :root {
+            --primary: #238636;
+            --primary-dark: #19672c;
+            --secondary: #1f6feb;
+            --light-bg: #f6f8fa;
+            --dark-bg: #0d1117;
+            --text-dark: #24292f;
+            --text-light: #f0f6fc;
+            --border-color: #d0d7de;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --success: #2da44e;
+            --warning: #d29922;
+            --danger: #cf222e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+        
+        body {
+            background-color: #fafbfc;
+            color: var(--text-dark);
+            line-height: 1.6;
         }
         
         .container {
-            background: white;
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-top: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
         
+        /* Header */
         header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #f0f0f0;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            padding: 1.5rem 0;
+            border-bottom: 1px solid #30363d;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         
-        h1 { 
-            color: #4a5568; 
-            font-size: 2.5em; 
-            margin-bottom: 10px; 
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .subtitle {
-            color: #718096;
-            font-size: 1.2em;
-        }
-        
-        .section {
-            margin: 30px 0;
-            padding: 25px;
-            background: #f7fafc;
-            border-radius: 10px;
-            border-left: 5px solid #4299e1;
-        }
-        
-        .task-list {
-            list-style: none;
-            margin: 20px 0;
-        }
-        
-        .task-item {
-            padding: 15px;
-            margin: 10px 0;
-            background: white;
-            border-radius: 8px;
+        .logo {
             display: flex;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            gap: 12px;
+            font-weight: 600;
+            font-size: 1.5rem;
         }
         
-        .status-done {
-            color: #38a169;
-            font-weight: bold;
+        .logo i {
+            color: var(--primary);
         }
         
-        .status-todo {
-            color: #e53e3e;
-            font-weight: bold;
+        .progress-bar {
+            margin-top: 1rem;
+            height: 4px;
+            background-color: #30363d;
+            border-radius: 2px;
+            overflow: hidden;
         }
         
-        .badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            margin: 0 10px;
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.5s ease;
         }
         
-        .badge-success { background: #c6f6d5; color: #22543d; }
-        .badge-warning { background: #feebc8; color: #744210; }
-        .badge-info { background: #bee3f8; color: #2a4365; }
-        
-        .links {
+        /* Main Content */
+        main {
             display: flex;
+            min-height: calc(100vh - 180px);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: white;
+            border-right: 1px solid var(--border-color);
+            padding: 2rem 0;
+            position: sticky;
+            top: 120px;
+            height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+        
+        .step-nav {
+            list-style: none;
+        }
+        
+        .step-item {
+            padding: 0.8rem 1.5rem;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .step-item:hover {
+            background-color: var(--light-bg);
+        }
+        
+        .step-item.active {
+            border-left-color: var(--primary);
+            background-color: rgba(35, 134, 54, 0.05);
+            color: var(--primary);
+        }
+        
+        .step-item.completed .step-icon {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .step-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: var(--light-bg);
+            display: flex;
+            align-items: center;
             justify-content: center;
-            gap: 20px;
-            margin-top: 40px;
-            flex-wrap: wrap;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .step-item.active .step-icon {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        /* Content */
+        .content {
+            flex: 1;
+            padding: 2rem 3rem;
+            overflow-y: auto;
+        }
+        
+        .step-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .step-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            color: var(--dark-bg);
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin: 2rem 0 1rem;
+            color: var(--dark-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+        
+        h3 {
+            font-size: 1.4rem;
+            margin: 1.5rem 0 0.8rem;
+            color: var(--dark-bg);
+        }
+        
+        p {
+            margin-bottom: 1rem;
+        }
+        
+        .objective-box {
+            background-color: rgba(35, 134, 54, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .context-box {
+            background-color: rgba(31, 111, 235, 0.1);
+            border-left: 4px solid var(--secondary);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .task-card {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s;
+        }
+        
+        .task-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .task-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 0;
+        }
+        
+        .code-block {
+            background-color: var(--dark-bg);
+            color: #e6edf3;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: #7d8590;
+            font-size: 0.9rem;
+        }
+        
+        .copy-btn {
+            background: none;
+            border: 1px solid #30363d;
+            color: #e6edf3;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .copy-btn:hover {
+            background-color: #30363d;
+        }
+        
+        .code-block code {
+            white-space: pre;
+        }
+        
+        .highlight {
+            background-color: rgba(255, 255, 0, 0.2);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .note {
+            background-color: rgba(208, 215, 222, 0.3);
+            border-left: 4px solid var(--warning);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .bonus-section {
+            background-color: rgba(210, 153, 34, 0.1);
+            border: 1px dashed var(--warning);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
         }
         
         .btn {
-            padding: 12px 25px;
-            background: #4299e1;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
             color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            transition: all 0.3s;
         }
         
-        .btn:hover {
-            background: #3182ce;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(66, 153, 225, 0.3);
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
         }
         
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--light-bg);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Footer */
         footer {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            padding: 2rem 0;
+            margin-top: 2rem;
             text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-            color: #718096;
+            border-top: 1px solid #30363d;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .badge-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .badge {
+            padding: 4px 10px;
+            background-color: #21262d;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid #30363d;
+        }
+        
+        /* Responsive */
+        @media (max-width: 900px) {
+            main {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+                top: 0;
+                padding: 1rem 0;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .step-nav {
+                display: flex;
+                overflow-x: auto;
+                padding: 0 1rem;
+            }
+            
+            .step-item {
+                white-space: nowrap;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+                padding: 0.8rem 1rem;
+            }
+            
+            .step-item.active {
+                border-left-color: transparent;
+                border-bottom-color: var(--primary);
+            }
+            
+            .content {
+                padding: 2rem;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .progress-bar {
+                width: 100%;
+            }
+            
+            .content {
+                padding: 1.5rem;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>📝 To-DoStud Project</h1>
-            <p class="subtitle">Mise en place d'un pipeline CI/CD complet avec GitHub Actions</p>
-        </header>
-        
-        <div class="section">
-            <h2>🎯 Objectif du TP DevOps</h2>
-            <p>Mettre en œuvre les bases du DevOps en utilisant GitHub pour versionner le code, automatiser les tests, construire et publier une image Docker, et déployer automatiquement une application.</p>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-code-branch"></i>
+                    <span>CI/CD avec GitHub Actions</span>
+                </div>
+                <div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div style="font-size: 0.9rem; margin-top: 5px;">
+                        Étape <span id="currentStep">1</span> sur <span id="totalSteps">6</span>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div class="section">
-            <h2>✅ Progression du projet</h2>
-            <ul class="task-list">
-                <li class="task-item">
-                    <span class="status-done">✓</span>
-                    <span style="flex-grow: 1; margin-left: 10px;">Étape 1 : Initialiser le dépôt GitHub avec branches main/dev</span>
-                    <span class="badge badge-success">Terminé</span>
+    </header>
+    
+    <main>
+        <div class="sidebar">
+            <ul class="step-nav">
+                <li class="step-item active" data-step="1">
+                    <div class="step-icon">1</div>
+                    <span>Introduction</span>
                 </li>
-                <li class="task-item">
-                    <span class="status-done">✓</span>
-                    <span style="flex-grow: 1; margin-left: 10px;">Étape 2 : Mettre en place le workflow CI avec tests automatisés</span>
-                    <span class="badge badge-success">Terminé</span>
+                <li class="step-item" data-step="2">
+                    <div class="step-icon">2</div>
+                    <span>Initialiser le projet GitHub</span>
                 </li>
-                <li class="task-item">
-                    <span class="status-done">✓</span>
-                    <span style="flex-grow: 1; margin-left: 10px;">Étape 3 : Dockeriser l'application avec Dockerfile</span>
-                    <span class="badge badge-success">Terminé</span>
+                <li class="step-item" data-step="3">
+                    <div class="step-icon">3</div>
+                    <span>Workflow CI</span>
                 </li>
-                <li class="task-item">
-                    <span class="status-done">✓</span>
-                    <span style="flex-grow: 1; margin-left: 10px;">Étape 4 : Publier automatiquement l'image Docker</span>
-                    <span class="badge badge-success">Terminé</span>
+                <li class="step-item" data-step="4">
+                    <div class="step-icon">4</div>
+                    <span>Dockeriser l'application</span>
                 </li>
-                <li class="task-item">
-                    <span class="status-todo">⏳</span>
-                    <span style="flex-grow: 1; margin-left: 10px;">Étape 5 : Déploiement automatique sur GitHub Pages</span>
-                    <span class="badge badge-warning">En cours</span>
+                <li class="step-item" data-step="5">
+                    <div class="step-icon">5</div>
+                    <span>Publier l'image Docker</span>
                 </li>
-                <li class="task-item">
-                    <span class="status-todo">○</span>
-                    <span style="flex-grow: 1; margin-left: 10px;">Étape 6 : Ajouter des badges et documentation</span>
-                    <span class="badge badge-info">À venir</span>
+                <li class="step-item" data-step="6">
+                    <div class="step-icon">6</div>
+                    <span>Déploiement automatique</span>
+                </li>
+                <li class="step-item" data-step="7">
+                    <div class="step-icon">+</div>
+                    <span>Bonus</span>
                 </li>
             </ul>
         </div>
         
-        <div class="section">
-            <h2>🔗 Liens du projet</h2>
-            <div class="links">
-                <a href="https://github.com/AthenaOrus/To-DoStud" class="btn" target="_blank">📁 Code Source</a>
-                <a href="https://github.com/AthenaOrus/To-DoStud/actions" class="btn" target="_blank">⚡ Pipeline CI/CD</a>
-                <a href="#" class="btn" id="deploy-link">🚀 Site Déployé (bientôt)</a>
+        <div class="content">
+            <!-- Étape 1: Introduction -->
+            <div class="step-content active" id="step1">
+                <h1>Mise en place d'un pipeline CI/CD avec GitHub Actions</h1>
+                
+                <div class="objective-box">
+                    <h3><i class="fas fa-bullseye"></i> Objectif du TP</h3>
+                    <p>Mettre en œuvre les bases du DevOps en utilisant GitHub pour :</p>
+                    <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                        <li>Versionner le code</li>
+                        <li>Automatiser les tests</li>
+                        <li>Construire et publier une image Docker</li>
+                        <li>Déployer automatiquement une application (sur GitHub Pages, Docker Hub ou un serveur)</li>
+                    </ul>
+                </div>
+                
+                <div class="context-box">
+                    <h3><i class="fas fa-project-diagram"></i> Contexte</h3>
+                    <p>Vous travaillez dans une petite équipe de développement et vous devez mettre en place un pipeline DevOps complet pour une application Web simple (API Node.js, appli Python Flask, site static React, etc.).</p>
+                </div>
+                
+                <div class="task-card">
+                    <h3><i class="fas fa-list-check"></i> Tâches à réaliser</h3>
+                    <p>Ce guide vous accompagnera à travers les 6 étapes principales :</p>
+                    <ol style="margin-left: 1.5rem; margin-top: 1rem;">
+                        <li>Initialiser un projet et un dépôt GitHub</li>
+                        <li>Mettre en place un workflow de CI (intégration continue)</li>
+                        <li>Dockeriser l'application</li>
+                        <li>Publier automatiquement l'image Docker</li>
+                        <li>Mettre en place un déploiement automatique (CD)</li>
+                        <li>Bonus (facultatif)</li>
+                    </ol>
+                </div>
+                
+                <div class="note">
+                    <p><strong>Note :</strong> Ce guide est interactif. Utilisez la navigation à gauche pour suivre les différentes étapes. Vous pouvez copier les exemples de code directement en cliquant sur le bouton "Copier".</p>
+                </div>
+            </div>
+            
+            <!-- Étape 2: Initialiser le projet GitHub -->
+            <div class="step-content" id="step2">
+                <h1>1. Initialiser un projet et un dépôt GitHub</h1>
+                
+                <p>La première étape consiste à préparer votre environnement de développement et votre dépôt GitHub.</p>
+                
+                <h3>Créer un dépôt GitHub</h3>
+                <p>Créez un nouveau dépôt sur GitHub en suivant ces étapes :</p>
+                <ul style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                    <li>Connectez-vous à votre compte GitHub</li>
+                    <li>Cliquez sur le bouton "+" en haut à droite et sélectionnez "New repository"</li>
+                    <li>Nommez votre dépôt (ex: <span class="highlight">mon-app-ci-cd</span>)</li>
+                    <li>Ajoutez une description (optionnel)</li>
+                    <li>Choisissez "Public" ou "Private" selon vos besoins</li>
+                    <li>Cochez "Add a README file"</li>
+                    <li>Sélectionnez un <span class="highlight">.gitignore</span> adapté à votre projet (Node, Python, etc.)</li>
+                    <li>Choisissez une licence si nécessaire</li>
+                    <li>Cliquez sur "Create repository"</li>
+                </ul>
+                
+                <h3>Structure du projet</h3>
+                <p>Une bonne structure de projet est essentielle pour la maintenabilité :</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Structure du projet</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                    </div>
+                    <code>mon-app-ci-cd/
+├── .github/
+│   └── workflows/      # Fichiers de workflow GitHub Actions
+├── src/                # Code source de l'application
+├── tests/              # Tests unitaires et d'intégration
+├── public/             # Fichiers statiques (pour une app web)
+├── Dockerfile          # Configuration Docker
+├── docker-compose.yml  # Configuration multi-conteneurs (optionnel)
+├── package.json        # Dépendances Node.js (si applicable)
+├── requirements.txt    # Dépendances Python (si applicable)
+├── README.md           # Documentation du projet
+└── .gitignore          # Fichiers à ignorer par Git</code>
+                </div>
+                
+                <h3>Configurer les branches</h3>
+                <p>Configurez une stratégie de branches pour votre projet :</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Configuration des branches</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                    </div>
+                    <code># Créer une branche dev
+git checkout -b dev
+
+# Pousser la branche dev sur GitHub
+git push -u origin dev
+
+# Configurer la branche main comme branche par défaut protégée
+# (dans GitHub → Settings → Branches → Add rule)
+# - Require pull request reviews before merging
+# - Require status checks to pass before merging
+# - Include administrators</code>
+                </div>
+                
+                <div class="note">
+                    <p><strong>Conseil :</strong> Utilisez des branches thématiques pour chaque nouvelle fonctionnalité (<span class="highlight">feature/nom-fonctionnalite</span>) et fusionnez-les dans <span class="highlight">dev</span> avant de les merger dans <span class="highlight">main</span>.</p>
+                </div>
+            </div>
+            
+            <!-- Étape 3: Workflow CI -->
+            <div class="step-content" id="step3">
+                <h1>2. Mettre en place un workflow de CI (intégration continue)</h1>
+                
+                <p>L'intégration continue permet de tester automatiquement chaque modification du code.</p>
+                
+                <h3>Créer le fichier de workflow</h3>
+                <p>Créez le fichier <span class="highlight">.github/workflows/ci.yml</span> dans votre dépôt :</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>.github/workflows/ci.yml</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                    </div>
+                    <code>name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x] # Adaptez selon votre projet
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linting
+      run: npm run lint || echo "No lint script found"
+    
+    - name: Run unit tests
+      run: npm test
+    
+    - name: Run integration tests
+      run: npm run test:integration || echo "No integration tests script found"
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-output
+        path: |
+          dist/
+          build/
+          public/</code>
+                </div>
+                
+                <h3>Configuration pour une application Python Flask</h3>
+                <p>Si vous utilisez Python au lieu de Node.js :</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>CI pour Python Flask</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                    </div>
+                    <code>name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-flask
+    
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Test with pytest
+      run: |
+        pytest tests/ -v --tb=short
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results-${{ matrix.python-version }}
+        path: test-reports/</code>
+                </div>
+                
+                <div class="note">
+                    <p><strong>Important :</strong> Le workflow CI s'exécute à chaque push sur les branches <span class="highlight">dev</span> et <span class="highlight">main</span>, ainsi que sur chaque pull request. Cela garantit que le code est toujours testé avant d'être fusionné.</p>
+                </div>
+            </div>
+            
+            <!-- Étape 4: Dockeriser l'application -->
+            <div class="step-content" id="step4">
+                <h1>3. Dockeriser l'application</h1>
+                
+                <p>Docker permet de créer des conteneurs portables et reproductibles pour votre application.</p>
+                
+                <h3>Écrire un Dockerfile</h3>
+                <p>Créez un fichier <span class="highlight">Dockerfile</span> à la racine de votre projet :</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Dockerfile pour Node.js</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                    </div>
+                    <code># Étape de construction
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+# Copier les fichiers de dépendances
+COPY package*.json ./
+
+# Installer les dépendances
+RUN npm ci --only=production
+
+# Copier le code source
+COPY . .
+
+# Construire l'application
+RUN npm run build
+
+# Étape d'exécution
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copier les dépendances et le build de l'étape précédente
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./
+
+# Exposer le port de l'application
+EXPOSE 3000
+
+# Commande de démarrage
+CMD ["npm", "start"]</code>
+                </div>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Dockerfile pour Python Flask</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                    </div>
+                    <code># Utiliser une image Python officielle
+FROM python:3.11-slim
+
+# Définir le répertoire de travail
+WORKDIR /app
+
+# Copier les fichiers de dépendances
+COPY requirements.txt .
+
+# Installer les dépendances
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copier le code source
+COPY . .
+
+# Exposer le port utilisé par Flask
+EXPOSE 5000
+
+# Variable d'environnement pour Flask
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=production
+
+# Commande pour démarrer l'application
+CMD ["flask", "run", "--host=0.0.0.0"]</code>
+                </div>
+                
+                <h3>Construire et tester localement</h3>
+                <p>Testez votre image Docker localement avant de l'intégrer dans le pipeline :</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Commandes Docker locales</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                    </div>
+                    <code># Construire l'image
+docker build -t mon-app-ci-cd .
+
+# Vérifier que l'image a été créée
+docker images
+
+# Exécuter un conteneur à partir de l'image
+docker run -p 3000:3000 mon-app-ci-cd
+
+# Pour une application Flask (port 5000)
+docker run -p 5000:5000 mon-app-ci-cd
+
+# Exécuter en mode détaché
+docker run -d -p 3000:3000 --name mon-app mon-app-ci-cd
+
+# Voir les logs du conteneur
+docker logs mon-app
+
+# Arrêter le conteneur
+docker stop mon-app
+
+# Supprimer le conteneur
+docker rm mon-app</code>
+                </div>
+                
+                <div class="note">
+                    <p><strong>Conseil :</strong> Créez un fichier <span class="highlight">.dockerignore</span> pour exclure les fichiers inutiles de l'image Docker (comme <span class="highlight">node_modules</span>, <span class="highlight">.git</span>, etc.).</p>
+                </div>
+            </div>
+            
+            <!-- Étape 5: Publier l'image Docker -->
+            <div class="step-content" id="step5">
+                <h1>4. Publier automatiquement l'image Docker</h1>
+                
+                <p>Automatisez la publication de votre image Docker sur un registre comme Docker Hub ou GitHub Container Registry (GHCR).</p>
+                
+                <h3>Créer un workflow de publication</h3>
+                <p>Créez un fichier <span class="highlight">.github/workflows/docker-publish.yml</span> :</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>.github/workflows/docker-publish.yml</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                    </div>
+                    <code>name: Docker Publish
+
+on:
+  release:
+    types: [published, edited]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Extract metadata for Docker
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ secrets.DOCKER_USERNAME }}/mon-app-ci-cd
+        tags: |
+          type=ref,event=branch
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+    
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max</code>
+                </div>
+                
+                <h3>Configuration des secrets GitHub</h3>
+                <p>Ajoutez vos identifiants Docker Hub aux secrets GitHub :</p>
+                <ol style="margin-left: 1.5rem; margin-bottom: 1rem;">
+                    <li>Allez dans votre dépôt GitHub → Settings → Secrets and variables → Actions</li>
+                    <li>Cliquez sur "New repository secret"</li>
+                    <li>Ajoutez <span class="highlight">DOCKER_USERNAME</span> avec votre nom d'utilisateur Docker Hub</li>
+                    <li>Ajoutez <span class="highlight">DOCKER_PASSWORD</span> avec votre token d'accès Docker Hub</li>
+                </ol>
+                
+                <h3>Alternative : GitHub Container Registry (GHCR)</h3>
+                <p>Si vous préférez utiliser GHCR au lieu de Docker Hub :</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Publication sur GHCR</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                    </div>
+                    <code>name: Docker Publish to GHCR
+
+on:
+  release:
+    types: [published, edited]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Log in to GHCR
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: |
+          ghcr.io/${{ github.repository_owner }}/mon-app-ci-cd:latest
+          ghcr.io/${{ github.repository_owner }}/mon-app-ci-cd:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max</code>
+                </div>
+                
+                <div class="note">
+                    <p><strong>Important :</strong> Pour GHCR, le token GitHub est automatiquement disponible. Assurez-vous simplement que les permissions <span class="highlight">packages: write</span> sont configurées.</p>
+                </div>
+            </div>
+            
+            <!-- Étape 6: Déploiement automatique -->
+            <div class="step-content" id="step6">
+                <h1>5. Mettre en place un déploiement automatique (CD)</h1>
+                
+                <p>Le déploiement continu permet de déployer automatiquement votre application après les tests réussis.</p>
+                
+                <h3>Déployer sur GitHub Pages</h3>
+                <p>Pour un site statique (React, Vue, HTML/CSS/JS) :</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>.github/workflows/deploy-gh-pages.yml</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                    </div>
+                    <code>name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Permet de déclencher manuellement
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: build  # ou 'dist' selon votre config
+        branch: gh-pages
+        clean: true</code>
+                </div>
+                
+                <h3>Déployer avec Docker sur un serveur</h3>
+                <p>Pour déployer sur un VPS ou un serveur avec SSH :</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>.github/workflows/deploy-server.yml</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                    </div>
+                    <code>name: Deploy to Server
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        port: ${{ secrets.SERVER_PORT }}
+        script: |
+          cd /var/www/mon-app-ci-cd
+          git pull origin main
+          docker-compose down
+          docker-compose pull
+          docker-compose up -d --build
+          docker system prune -f
+    
+    - name: Send Discord notification
+      uses: Ilshidur/action-discord@master
+      if: success()
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      with:
+        args: '✅ Déploiement réussi sur le serveur de production!'
+    
+    - name: Send Discord notification (failure)
+      uses: Ilshidur/action-discord@master
+      if: failure()
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      with:
+        args: '❌ Échec du déploiement sur le serveur de production!'</code>
+                </div>
+                
+                <h3>Configuration pour le déploiement</h3>
+                <p>Sur votre serveur, préparez un fichier <span class="highlight">docker-compose.yml</span> :</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>docker-compose.yml sur le serveur</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                    </div>
+                    <code>version: '3.8'
+
+services:
+  web:
+    image: ${{ secrets.DOCKER_USERNAME }}/mon-app-ci-cd:latest
+    container_name: mon-app-ci-cd
+    restart: always
+    ports:
+      - "80:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - database
+  
+  database:
+    image: postgres:14-alpine
+    container_name: mon-app-db
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:</code>
+                </div>
+                
+                <div class="note">
+                    <p><strong>Note :</strong> N'oubliez pas d'ajouter les secrets nécessaires dans GitHub (SERVER_HOST, SERVER_USER, SERVER_SSH_KEY, etc.) pour permettre le déploiement sécurisé.</p>
+                </div>
+            </div>
+            
+            <!-- Étape 7: Bonus -->
+            <div class="step-content" id="step7">
+                <h1>6. Bonus (facultatif)</h1>
+                
+                <div class="bonus-section">
+                    <h3><i class="fas fa-star"></i> Fonctionnalités avancées</h3>
+                    
+                    <h3>Stratégie de branches avancée</h3>
+                    <p>Configurez des règles de protection de branches plus strictes :</p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>Configuration des branches protégées</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                        </div>
+                        <code># Dans GitHub → Settings → Branches → Add rule
+Branches: main, dev
+
+Options à activer:
+✓ Require a pull request before merging
+  - Require approvals: 1
+  - Dismiss stale pull request approvals when new commits are pushed
+✓ Require status checks to pass before merging
+  - Require branches to be up to date before merging
+  - Status checks: ci.yml, docker-publish.yml
+✓ Require conversation resolution before merging
+✓ Include administrators</code>
+                    </div>
+                    
+                    <h3>Tests avancés</h3>
+                    <p>Ajoutez des tests supplémentaires à votre pipeline CI :</p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>Tests avancés dans CI</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                        </div>
+                        <code># Ajoutez ces étapes à votre workflow CI
+- name: Security audit
+  run: npm audit --audit-level=moderate || true
+
+- name: Run end-to-end tests
+  run: npm run test:e2e
+  if: github.ref == 'refs/heads/main'
+
+- name: Code coverage
+  uses: codecov/codecov-action@v3
+  with:
+    token: ${{ secrets.CODECOV_TOKEN }}
+    files: ./coverage/lcov.info
+
+- name: Performance tests
+  run: |
+    npm run build
+    lighthouse --output=json --output-path=./lighthouse-report.json \
+      http://localhost:3000 --chrome-flags="--headless"
+  if: github.ref == 'refs/heads/main'</code>
+                    </div>
+                    
+                    <h3>Badges dans le README</h3>
+                    <p>Ajoutez des badges pour montrer l'état de votre projet :</p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>Badges pour README.md</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                        </div>
+<code># Mon App CI/CD
+
+![CI Status](https://github.com/votre-username/mon-app-ci-cd/workflows/CI%20Pipeline/badge.svg)
+![Docker Image](https://img.shields.io/docker/v/votre-username/mon-app-ci-cd?sort=semver)
+![GitHub Release](https://img.shields.io/github/v/release/votre-username/mon-app-ci-cd)
+![License](https://img.shields.io/github/license/votre-username/mon-app-ci-cd)
+![Code Coverage](https://codecov.io/gh/votre-username/mon-app-ci-cd/branch/main/graph/badge.svg)</code>
+                    </div>
+                    
+                    <h3>Workflow complet optimisé</h3>
+                    <p>Exemple d'un workflow CI/CD complet avec toutes les étapes :</p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>Workflow CI/CD complet</span>
+                            <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                        </div>
+<code>name: Complete CI/CD Pipeline
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ main, dev ]
+  release:
+    types: [published]
+
+jobs:
+  test:
+    name: Test on Node ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+    
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ matrix.node-version }}
+          path: dist/
+  
+  docker:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'release'
+    
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/mon-app-ci-cd:latest
+            ${{ secrets.DOCKER_USERNAME }}/mon-app-ci-cd:${{ github.sha }}
+  
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          branch: gh-pages
+      
+      - name: Notify Discord
+        uses: appleboy/discord-action@master
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          message: "🚀 Nouvelle version déployée : ${{ github.ref }}"</code>
+                    </div>
+                </div>
+                
+                <div class="task-card">
+                    <h3><i class="fas fa-check-circle"></i> Conclusion</h3>
+                    <p>Félicitations ! Vous avez maintenant mis en place un pipeline CI/CD complet avec GitHub Actions. Votre pipeline :</p>
+                    <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                        <li>Exécute automatiquement les tests à chaque modification du code</li>
+                        <li>Construit et publie une image Docker à chaque release</li>
+                        <li>Déploie automatiquement votre application sur GitHub Pages ou un serveur</li>
+                        <li>Notifie l'équipe des succès et des échecs</li>
+                    </ul>
+                    <p style="margin-top: 1rem;">Ce pipeline garantit la qualité du code, accélère le développement et réduit les erreurs de déploiement.</p>
+                </div>
+            </div>
+            
+            <!-- Boutons de navigation -->
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" id="prevBtn" onclick="prevStep()" disabled>
+                    <i class="fas fa-arrow-left"></i> Précédent
+                </button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">
+                    Suivant <i class="fas fa-arrow-right"></i>
+                </button>
             </div>
         </div>
-        
-        <div class="section">
-            <h2>🛠️ Technologies utilisées</h2>
-            <p>
-                <span class="badge badge-info">Git</span>
-                <span class="badge badge-info">GitHub Actions</span>
-                <span class="badge badge-info">Node.js</span>
-                <span class="badge badge-info">Docker</span>
-                <span class="badge badge-info">GitHub Pages</span>
-                <span class="badge badge-info">HTML/CSS</span>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <h3 style="color: white; margin-bottom: 0.5rem;">Guide CI/CD avec GitHub Actions</h3>
+                    <p style="color: #8b949e; font-size: 0.9rem;">Un guide complet pour mettre en place un pipeline DevOps</p>
+                </div>
+                <div class="badge-container">
+                    <span class="badge">GitHub Actions</span>
+                    <span class="badge">CI/CD</span>
+                    <span class="badge">Docker</span>
+                    <span class="badge">DevOps</span>
+                    <span class="badge">Déploiement Automatique</span>
+                </div>
+            </div>
+            <p style="margin-top: 1.5rem; color: #8b949e; font-size: 0.8rem;">
+                © 2023 - Guide interactif pour TP DevOps - Tous droits réservés
             </p>
         </div>
-        
-        <footer>
-            <p>Projet réalisé dans le cadre d'un TP DevOps - AthenaOrus</p>
-            <p>Dernière mise à jour : <span id="current-date"></span></p>
-        </footer>
-    </div>
+    </footer>
     
     <script>
-        // Afficher la date actuelle
-        document.getElementById('current-date').textContent = new Date().toLocaleDateString('fr-FR');
+        // Configuration initiale
+        const totalSteps = 7;
+        let currentStep = 1;
         
-        // Mettre à jour le lien de déploiement
-        const repoName = window.location.pathname.split('/')[1] || 'To-DoStud';
-        const deployLink = document.getElementById('deploy-link');
-        deployLink.href = `https://athenaorus.github.io/${repoName}/`;
-        deployLink.textContent = '🚀 Site Déployé';
+        // Éléments DOM
+        const stepItems = document.querySelectorAll('.step-item');
+        const stepContents = document.querySelectorAll('.step-content');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressFill = document.getElementById('progressFill');
+        const currentStepEl = document.getElementById('currentStep');
+        const totalStepsEl = document.getElementById('totalSteps');
+        
+        // Initialiser l'interface
+        function init() {
+            totalStepsEl.textContent = totalSteps;
+            updateProgress();
+            updateNavigationButtons();
+            
+            // Initialiser les événements de clic sur les éléments de navigation
+            stepItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const step = parseInt(item.getAttribute('data-step'));
+                    goToStep(step);
+                });
+            });
+        }
+        
+        // Aller à une étape spécifique
+        function goToStep(step) {
+            if (step < 1 || step > totalSteps) return;
+            
+            // Mettre à jour l'étape actuelle
+            currentStep = step;
+            
+            // Mettre à jour la navigation
+            updateStepNavigation();
+            updateProgress();
+            updateNavigationButtons();
+            
+            // Défilement vers le haut
+            document.querySelector('.content').scrollTop = 0;
+        }
+        
+        // Étape suivante
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                goToStep(currentStep + 1);
+            }
+        }
+        
+        // Étape précédente
+        function prevStep() {
+            if (currentStep > 1) {
+                goToStep(currentStep - 1);
+            }
+        }
+        
+        // Mettre à jour la navigation des étapes
+        function updateStepNavigation() {
+            // Mettre à jour les éléments de navigation
+            stepItems.forEach(item => {
+                const step = parseInt(item.getAttribute('data-step'));
+                
+                // Réinitialiser toutes les classes
+                item.classList.remove('active', 'completed');
+                
+                // Marquer comme complété si l'étape est passée
+                if (step < currentStep) {
+                    item.classList.add('completed');
+                }
+                
+                // Marquer comme active si c'est l'étape actuelle
+                if (step === currentStep) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Mettre à jour le contenu
+            stepContents.forEach(content => {
+                content.classList.remove('active');
+                
+                if (content.id === `step${currentStep}`) {
+                    content.classList.add('active');
+                }
+            });
+        }
+        
+        // Mettre à jour la barre de progression
+        function updateProgress() {
+            const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
+            progressFill.style.width = `${progress}%`;
+            currentStepEl.textContent = currentStep;
+        }
+        
+        // Mettre à jour les boutons de navigation
+        function updateNavigationButtons() {
+            // Bouton précédent
+            if (currentStep === 1) {
+                prevBtn.disabled = true;
+            } else {
+                prevBtn.disabled = false;
+            }
+            
+            // Bouton suivant
+            if (currentStep === totalSteps) {
+                nextBtn.textContent = 'Terminé';
+                nextBtn.innerHTML = 'Terminé <i class="fas fa-check"></i>';
+                nextBtn.onclick = () => {
+                    alert('Félicitations ! Vous avez terminé le guide CI/CD.');
+                };
+            } else {
+                nextBtn.textContent = 'Suivant';
+                nextBtn.innerHTML = 'Suivant <i class="fas fa-arrow-right"></i>';
+                nextBtn.onclick = nextStep;
+            }
+        }
+        
+        // Fonction pour copier le code
+        function copyCode(button) {
+            const codeBlock = button.parentElement.parentElement;
+            const code = codeBlock.querySelector('code').textContent;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                // Afficher un feedback visuel
+                const originalText = button.textContent;
+                button.textContent = 'Copié !';
+                button.style.backgroundColor = 'var(--success)';
+                button.style.borderColor = 'var(--success)';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.backgroundColor = '';
+                    button.style.borderColor = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('Erreur lors de la copie : ', err);
+                button.textContent = 'Erreur';
+                button.style.backgroundColor = 'var(--danger)';
+                
+                setTimeout(() => {
+                    button.textContent = 'Copier';
+                    button.style.backgroundColor = '';
+                }, 2000);
+            });
+        }
+        
+        // Raccourcis clavier
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                e.preventDefault();
+                prevStep();
+            } else if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+                e.preventDefault();
+                nextStep();
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                goToStep(1);
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                goToStep(totalSteps);
+            }
+        });
+        
+        // Initialiser l'application
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
