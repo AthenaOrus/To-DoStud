@@ -1,55 +1,58 @@
-const express = require('express');
-const app = express();
+// Application To-DoStud - Point d'entrée principal
+console.log("========================================");
+console.log(" To-DoStud Application v1.0.0");
+console.log(" Gestionnaire de tâches avec CI/CD");
+console.log("========================================");
+
+// Configuration
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-
-// Route principale
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Bienvenue sur To-DoStud App!',
-    version: '1.0.0',
-    endpoints: ['GET /', 'GET /health', 'GET /todos', 'POST /todos']
-  });
-});
-
-// Route santé
-app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'healthy',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Simulation de données To-Do
-let todos = [
-  { id: 1, task: 'Configurer Git', completed: true },
-  { id: 2, task: 'Créer le workflow CI', completed: false },
-  { id: 3, task: 'Dockeriser l\'app', completed: false }
+// Données de test
+const todos = [
+  { id: 1, task: "Configurer Git et GitHub", completed: true },
+  { id: 2, task: "Créer le workflow CI/CD", completed: true },
+  { id: 3, task: "Dockeriser l'application", completed: false },
+  { id: 4, task: "Déployer automatiquement", completed: false }
 ];
 
-// GET tous les todos
-app.get('/todos', (req, res) => {
-  res.json(todos);
+// Afficher les tâches
+console.log("\n Liste des tâches :");
+todos.forEach(todo => {
+  const status = todo.completed ? " " : " ";
+  console.log(`${status} ${todo.id}. ${todo.task}`);
 });
 
-// POST un nouveau todo
-app.post('/todos', (req, res) => {
-  const newTodo = {
-    id: todos.length + 1,
-    task: req.body.task || 'Nouvelle tâche',
-    completed: false
-  };
-  todos.push(newTodo);
-  res.status(201).json(newTodo);
+// Simulation serveur web
+const http = require('http');
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  
+  if (req.url === '/') {
+    res.end(JSON.stringify({
+      app: "To-DoStud",
+      version: "1.0.0",
+      message: "Bienvenue sur l'API To-DoStud!",
+      endpoints: ["GET /", "GET /todos", "GET /health"]
+    }, null, 2));
+  } else if (req.url === '/todos') {
+    res.end(JSON.stringify(todos, null, 2));
+  } else if (req.url === '/health') {
+    res.end(JSON.stringify({ status: "healthy", timestamp: new Date().toISOString() }));
+  } else {
+    res.writeHead(404);
+    res.end(JSON.stringify({ error: "Endpoint non trouvé" }));
+  }
 });
 
 // Démarrer le serveur
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`✅ Serveur To-DoStud démarré sur le port ${PORT}`);
-    console.log(`🌐 http://localhost:${PORT}`);
+  server.listen(PORT, () => {
+    console.log(`\n Serveur démarré sur le port ${PORT}`);
+    console.log(`🔗 http://localhost:${PORT}`);
+    console.log(`🔗 http://localhost:${PORT}/todos`);
+    console.log(`🔗 http://localhost:${PORT}/health`);
+    console.log("\n Prêt pour le CI/CD!");
   });
 }
 
-module.exports = app;
+module.exports = { server, todos };
