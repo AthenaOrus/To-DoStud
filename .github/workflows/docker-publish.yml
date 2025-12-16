@@ -26,38 +26,21 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
     
-    - name: Extract metadata (tags, labels)
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.IMAGE_NAME }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=sha,prefix={{branch}}-
-    
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-    
-    - name: Verify push
+    - name: Build Docker image
       run: |
-        echo "✅ Image Docker publiée avec succès !"
-        echo "📦 Registry: ${{ env.REGISTRY }}"
-        echo "🏷️ Image: ${{ env.IMAGE_NAME }}"
-        echo "🔗 URL: https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/todo-stud-app"
+        echo "🔨 Building Docker image..."
+        docker build -t ${{ env.IMAGE_NAME }}:latest .
+        echo "✅ Docker image built"
     
-    - name: Create GitHub release artifact
-      uses: softprops/action-gh-release@v1
-      if: github.event_name == 'release'
-      with:
-        files: |
-          Dockerfile
-          docker-compose.yml
-        generate_release_notes: true
+    - name: Push to Docker Hub
+      run: |
+        echo "📦 Pushing to Docker Hub..."
+        docker push ${{ env.IMAGE_NAME }}:latest
+        echo "✅ Image pushed successfully"
+    
+    - name: Verify and display info
+      run: |
+        echo "🎉 Docker image published!"
+        echo "📊 Image: ${{ env.IMAGE_NAME }}:latest"
+        echo "🔗 URL: https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/todo-stud-app"
+        echo "📅 Date: $(date)"
