@@ -1,46 +1,43 @@
-name: Publish Docker Image
+name: Deploy to GitHub Pages
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch:  # Permet de déclencher manuellement
+  push:
+    branches: [main]
+  workflow_dispatch:
 
-env:
-  REGISTRY: docker.io
-  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/todo-stud-app
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  build-and-push:
+  deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     
     steps:
-    - name: Checkout repository
+    - name: Checkout
       uses: actions/checkout@v4
     
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
     
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v3
+    - name: Create simple site
+      run: |
+        echo '<!DOCTYPE html><html><head><title>To-DoStud</title></head><body><h1>✅ Déploiement CD Réussi!</h1></body></html>' > index.html
+    
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        path: '.'
     
-    - name: Build Docker image
-      run: |
-        echo "🔨 Building Docker image..."
-        docker build -t ${{ env.IMAGE_NAME }}:latest .
-        echo "✅ Docker image built"
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
     
-    - name: Push to Docker Hub
+    - name: Notification
       run: |
-        echo "📦 Pushing to Docker Hub..."
-        docker push ${{ env.IMAGE_NAME }}:latest
-        echo "✅ Image pushed successfully"
-    
-    - name: Verify and display info
-      run: |
-        echo "🎉 Docker image published!"
-        echo "📊 Image: ${{ env.IMAGE_NAME }}:latest"
-        echo "🔗 URL: https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/todo-stud-app"
-        echo "📅 Date: $(date)"
+        echo "✅ CD Deployment Successful!"
+        echo "🌐 Site URL: ${{ steps.deployment.outputs.page_url }}"
