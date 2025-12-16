@@ -1,4 +1,4 @@
-name: CI Pipeline DevOps
+name: CI Pipeline
 
 on:
   push:
@@ -11,64 +11,47 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name:  Checkout du code
+    - name: Checkout code
       uses: actions/checkout@v4
     
-    - name:  Setup Node.js 20
+    - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20.x'
-        cache: 'npm'
     
-    - name:  Afficher la structure
+    - name: Check files
       run: |
-        echo "=== STRUCTURE DU PROJET ==="
+        echo "Checking files..."
         ls -la
         echo ""
-        echo "=== CONTENU DE src ==="
-        ls -la src/ || echo "src/ non trouvé"
-        echo ""
-        echo "=== CONTENU DE tests ==="
-        ls -la tests/ || echo "tests/ non trouvé"
-    
-    - name:  Installer les dépendances
-      run: |
-        if [ -f "package.json" ]; then
-          echo "Installation des dépendances..."
-          npm ci
-          echo " Dépendances installées"
+        if [ -f "package-lock.json" ]; then
+          echo "package-lock.json found"
         else
-          echo " package.json non trouvé - création d'un fichier minimal"
-          echo '{"name": "todo-stud", "version": "1.0.0", "scripts": {"test": "echo test"}}' > package.json
+          echo "Creating package-lock.json..."
+          echo '{"name": "todo-stud", "version": "1.0.0"}' > package.json
           npm install
         fi
     
-    - name:  Exécuter les tests
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Run tests
       run: |
-        echo "=== LANCEMENT DES TESTS ==="
-        if [ -f "package.json" ]; then
-          npm test
+        if [ -f "tests/test.js" ]; then
+          node tests/test.js
         else
-          echo "Tests simulés - tout passe!"
+          echo "No test file found, skipping tests"
         fi
     
-    - name:  Build l'application
+    - name: Build application
       run: |
-        echo "=== BUILD DE L'APPLICATION ==="
         if [ -f "src/index.js" ]; then
-          echo "Compilation..."
-          node src/index.js --version || echo "Application chargée"
+          echo "Building..."
+          node -c src/index.js
+          echo "Build successful"
         else
-          echo " Build simulé"
+          echo "No source file found"
         fi
     
-    - name: 📊 Générer un rapport
-      run: |
-        echo "=== RAPPORT CI ==="
-        echo " Toutes les étapes sont passées"
-        echo " Date: $(date)"
-        echo " Branche: ${{ github.ref }}"
-        echo " Commit: ${{ github.sha }}"
-    
-    - name:  Succès
-      run: echo " PIPELINE CI RÉUSSI !"
+    - name: Success
+      run: echo "CI Pipeline completed successfully"

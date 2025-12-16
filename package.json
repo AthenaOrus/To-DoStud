@@ -7,15 +7,10 @@
     "start": "node src/index.js",
     "dev": "node src/index.js",
     "test": "node tests/test.js",
-    "build": "echo ' Build terminé!' && date",
-    "ci-test": "echo ' Tests CI passés!' && exit 0"
+    "build": "echo '🚀 Build terminé!' && date"
   },
-  "dependencies": {
-    "express": "^4.18.2"
-  },
-  "devDependencies": {
-    "jest": "^29.7.0"
-  },
+  "dependencies": {},
+  "devDependencies": {},
   "keywords": ["todo", "ci-cd", "devops", "github-actions"],
   "author": "AthenaOrus",
   "license": "MIT"
