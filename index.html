@@ -3,10 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guide CI/CD avec GitHub Actions | Tutoriel Interactif</title>
+    <title>Guide CI/CD avec GitHub Actions | Tutoriel interactif</title>
+   
+    <!-- Meta SEO -->
+    <meta name="description" content="Guide interactif pour apprendre CI/CD avec GitHub Actions. Tutoriel étape par étape avec exemples pratiques.">
+    <meta name="keywords" content="CI/CD, GitHub Actions, DevOps, Tutoriel, Pipeline, Déploiement, Intégration continue">
+    <meta name="author" content="GitHub Actions Guide">
+   
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+   
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+   
     <style>
         /* Écran de chargement */
         #loading-screen {
@@ -45,7 +55,6 @@
             70% { transform: scale(1.1) rotate(10deg); }
             100% { transform: scale(1) rotate(0deg); }
         }
-        .loading-logo svg { width: 40px; height: 40px; fill: white; }
         .loading-text {
             font-family: 'Inter', sans-serif;
             font-size: 2.5rem;
@@ -72,17 +81,38 @@
             text-align: center;
             max-width: 400px;
         }
-        .loading-progress-container { width: 300px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; overflow: hidden; margin-bottom: 2rem; }
-        .loading-progress-bar { height: 100%; background: linear-gradient(90deg, #0969da, #54aeff, #2ea44f); border-radius: 2px; width: 0%; transition: width 5s linear; }
-        .loading-status { font-family: 'Inter', sans-serif; font-size: 0.95rem; color: #8b949e; margin-top: 2rem; text-align: center; opacity: 0.7; }
-
+        .loading-progress-container {
+            width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        .loading-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #0969da, #54aeff, #2ea44f);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 5s linear;
+        }
+        .loading-status {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            color: #8b949e;
+            margin-top: 2rem;
+            text-align: center;
+            opacity: 0.7;
+        }
         /* Masquer le contenu pendant le chargement */
         body:not(.loaded) .site-header,
         body:not(.loaded) .sidebar,
         body:not(.loaded) .main-content,
         body:not(.loaded) .site-footer,
-        body:not(.loaded) .mobile-toggle { display: none; }
-
+        body:not(.loaded) .mobile-toggle,
+        body:not(.loaded) .quick-nav {
+            display: none !important;
+        }
         /* Variables et styles principaux */
         :root {
             /* Palette GitHub 2025 */
@@ -97,7 +127,7 @@
             --text-primary: #24292f;
             --text-secondary: #57606a;
             --text-tertiary: #6e7781;
-            
+           
             /* Dimensions */
             --sidebar-width: 320px;
             --content-max: 900px;
@@ -105,24 +135,24 @@
             --radius-sm: 8px;
             --radius-md: 12px;
             --radius-lg: 16px;
-            
+           
             /* Transitions */
             --transition-fast: 200ms ease;
             --transition-base: 300ms ease;
             --transition-slow: 400ms ease;
-            
+           
             /* Ombre */
             --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
             --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
             --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
         }
-        
+       
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+       
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
             font-size: 1.05rem;
@@ -131,7 +161,16 @@
             background-color: var(--light-bg);
             overflow-x: hidden;
         }
-        
+       
+        /* Focus visible pour accessibilité */
+        button:focus,
+        .nav-item:focus,
+        .copy-btn:focus,
+        .nav-btn:focus {
+            outline: 2px solid var(--primary-blue);
+            outline-offset: 2px;
+        }
+       
         /* Header */
         .site-header {
             position: fixed;
@@ -148,13 +187,13 @@
             padding: 0 2rem;
             z-index: 1000;
         }
-        
+       
         .logo-container {
             display: flex;
             align-items: center;
             gap: 0.75rem;
         }
-        
+       
         .logo-icon {
             width: 32px;
             height: 32px;
@@ -167,7 +206,7 @@
             font-weight: 700;
             font-size: 1.1rem;
         }
-        
+       
         .logo-text {
             font-size: 1.4rem;
             font-weight: 700;
@@ -176,19 +215,51 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+       
         .progress-container {
             display: flex;
             align-items: center;
             gap: 1rem;
         }
-        
+       
         .progress-label {
             font-weight: 500;
             color: var(--text-secondary);
             font-size: 0.95rem;
         }
-        
+       
+        /* Navigation rapide */
+        .quick-nav {
+            position: fixed;
+            top: calc(var(--header-height) + 2rem);
+            right: 2rem;
+            z-index: 800;
+            display: flex;
+            gap: 0.5rem;
+            flex-direction: column;
+            max-width: 200px;
+        }
+       
+        .quick-nav-btn {
+            padding: 0.75rem 1rem;
+            background: var(--light-bg);
+            border: 1px solid var(--light-border);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-align: left;
+            box-shadow: var(--shadow-sm);
+        }
+       
+        .quick-nav-btn:hover {
+            background: var(--primary-blue);
+            color: white;
+            transform: translateX(-4px);
+        }
+       
         /* Sidebar */
         .sidebar {
             position: fixed;
@@ -203,7 +274,7 @@
             transition: transform var(--transition-base);
             z-index: 900;
         }
-        
+       
         .sidebar-title {
             font-size: 1rem;
             font-weight: 600;
@@ -214,13 +285,13 @@
             padding-bottom: 0.5rem;
             border-bottom: 2px solid var(--primary-blue);
         }
-        
+       
         .sidebar-nav {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
         }
-        
+       
         .nav-item {
             display: flex;
             align-items: center;
@@ -237,13 +308,13 @@
             position: relative;
             overflow: hidden;
         }
-        
+       
         .nav-item:hover {
             background: rgba(9, 105, 218, 0.08);
             color: var(--primary-blue);
             transform: translateX(4px);
         }
-        
+       
         .nav-item.active {
             background: linear-gradient(90deg, rgba(9, 105, 218, 0.1), rgba(9, 105, 218, 0.05));
             color: var(--primary-blue);
@@ -251,7 +322,7 @@
             border-left: 3px solid var(--primary-blue);
             padding-left: calc(1rem - 3px);
         }
-        
+       
         .nav-number {
             width: 24px;
             height: 24px;
@@ -264,13 +335,13 @@
             font-weight: 600;
             transition: all var(--transition-fast);
         }
-        
+       
         .nav-item:hover .nav-number,
         .nav-item.active .nav-number {
             background: var(--primary-blue);
             color: white;
         }
-        
+       
         /* Contenu principal */
         .main-content {
             margin-left: var(--sidebar-width);
@@ -280,11 +351,12 @@
             min-height: calc(100vh - var(--header-height));
             transition: margin-left var(--transition-base);
         }
-        
+       
         .step-container {
             animation: slideInRight var(--transition-base);
+            will-change: transform, opacity;
         }
-        
+       
         @keyframes slideInRight {
             from {
                 opacity: 0;
@@ -295,7 +367,7 @@
                 transform: translateX(0);
             }
         }
-        
+       
         .step-title {
             font-size: 2.75rem;
             font-weight: 700;
@@ -306,14 +378,31 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+       
         .step-subtitle {
             font-size: 1.3rem;
             color: var(--text-secondary);
             margin-bottom: 3rem;
             font-weight: 400;
         }
-        
+       
+        .step-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--light-secondary);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+       
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+       
         /* Barre de progression */
         .progress-bar {
             width: 200px;
@@ -322,7 +411,7 @@
             border-radius: 4px;
             overflow: hidden;
         }
-        
+       
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, var(--primary-blue), var(--success-green));
@@ -330,7 +419,7 @@
             transition: width var(--transition-slow) cubic-bezier(0.34, 1.56, 0.64, 1);
             width: 0%;
         }
-        
+       
         /* Cartes de tâches */
         .task-card {
             background: var(--light-bg);
@@ -340,13 +429,14 @@
             margin-bottom: 2rem;
             box-shadow: var(--shadow-sm);
             transition: all var(--transition-base);
+            position: relative;
         }
-        
+       
         .task-card:hover {
             box-shadow: var(--shadow-md);
             transform: translateY(-2px);
         }
-        
+       
         .task-card h3 {
             font-size: 1.4rem;
             font-weight: 600;
@@ -356,7 +446,7 @@
             align-items: center;
             gap: 0.75rem;
         }
-        
+       
         .task-icon {
             width: 36px;
             height: 36px;
@@ -368,7 +458,7 @@
             color: white;
             font-weight: 700;
         }
-        
+       
         /* Boîtes spéciales */
         .special-box {
             border-radius: var(--radius-md);
@@ -379,7 +469,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+       
         .special-box::before {
             content: '';
             position: absolute;
@@ -389,27 +479,27 @@
             height: 4px;
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
         }
-        
+       
         .box-objective {
             background: linear-gradient(135deg, rgba(84, 174, 255, 0.08), rgba(9, 105, 218, 0.04));
             border-left-color: var(--primary-blue);
         }
-        
+       
         .box-context {
             background: linear-gradient(135deg, rgba(158, 167, 180, 0.08), rgba(87, 96, 106, 0.04));
             border-left-color: var(--text-secondary);
         }
-        
+       
         .box-note {
             background: linear-gradient(135deg, rgba(247, 129, 102, 0.08), rgba(218, 100, 70, 0.04));
             border-left-color: var(--warning-orange);
         }
-        
+       
         .box-bonus {
             background: linear-gradient(135deg, rgba(46, 164, 79, 0.08), rgba(35, 134, 54, 0.04));
             border-left-color: var(--success-green);
         }
-        
+       
         .box-title {
             display: flex;
             align-items: center;
@@ -418,7 +508,7 @@
             font-weight: 600;
             margin-bottom: 1rem;
         }
-        
+       
         .box-icon {
             width: 28px;
             height: 28px;
@@ -429,22 +519,22 @@
             font-weight: 700;
             font-size: 0.9rem;
         }
-        
+       
         .box-objective .box-icon {
             background: var(--primary-blue);
             color: white;
         }
-        
+       
         .box-note .box-icon {
             background: var(--warning-orange);
             color: white;
         }
-        
+       
         .box-bonus .box-icon {
             background: var(--success-green);
             color: white;
         }
-        
+       
         /* Blocs de code */
         .code-block {
             position: relative;
@@ -454,7 +544,7 @@
             overflow: hidden;
             box-shadow: var(--shadow-lg);
         }
-        
+       
         .code-header {
             display: flex;
             justify-content: space-between;
@@ -463,7 +553,7 @@
             background: rgba(255, 255, 255, 0.05);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+       
         .code-language {
             font-family: 'Inter', monospace;
             font-size: 0.9rem;
@@ -472,7 +562,7 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-        
+       
         .copy-btn {
             display: flex;
             align-items: center;
@@ -487,35 +577,35 @@
             cursor: pointer;
             transition: all var(--transition-fast);
         }
-        
+       
         .copy-btn:hover {
             background: rgba(255, 255, 255, 0.15);
             color: white;
         }
-        
+       
         .copy-btn.copied {
             background: var(--success-green);
             color: white;
             border-color: var(--success-green);
         }
-        
+       
         .copy-btn.copied::after {
             content: '✓ Copié';
         }
-        
+       
         pre {
             margin: 0;
             padding: 1.5rem;
             overflow-x: auto;
         }
-        
+       
         code {
             font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
             font-size: 0.95rem;
             line-height: 1.6;
             color: #c9d1d9;
         }
-        
+       
         .hljs-keyword { color: #ff7b72; }
         .hljs-string { color: #a5d6ff; }
         .hljs-function { color: #d2a8ff; }
@@ -523,7 +613,7 @@
         .hljs-comment { color: #8b949e; }
         .hljs-title { color: #7ee787; }
         .hljs-number { color: #79c0ff; }
-        
+       
         /* Navigation entre étapes */
         .step-navigation {
             display: flex;
@@ -533,7 +623,7 @@
             padding-top: 2rem;
             border-top: 1px solid var(--light-border);
         }
-        
+       
         .nav-btn {
             display: flex;
             align-items: center;
@@ -548,38 +638,38 @@
             min-width: 160px;
             justify-content: center;
         }
-        
+       
         .nav-btn-prev {
             background: var(--light-secondary);
             color: var(--text-secondary);
             border: 1px solid var(--light-border);
         }
-        
+       
         .nav-btn-prev:hover:not(:disabled) {
             background: var(--light-border);
             transform: translateX(-4px);
             box-shadow: var(--shadow-md);
         }
-        
+       
         .nav-btn-next {
             background: var(--primary-blue);
             color: white;
             border: 1px solid var(--primary-blue);
         }
-        
+       
         .nav-btn-next:hover:not(:disabled) {
             background: #0a5dc2;
             transform: translateX(4px);
             box-shadow: var(--shadow-md);
         }
-        
+       
         .nav-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none !important;
             box-shadow: none !important;
         }
-        
+       
         /* Footer */
         .site-footer {
             background: var(--primary-dark);
@@ -588,7 +678,7 @@
             margin-left: var(--sidebar-width);
             transition: margin-left var(--transition-base);
         }
-        
+       
         .footer-content {
             max-width: var(--content-max);
             margin: 0 auto;
@@ -597,14 +687,14 @@
             align-items: center;
             gap: 2rem;
         }
-        
+       
         .footer-badges {
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
             justify-content: center;
         }
-        
+       
         .badge {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -615,35 +705,70 @@
             color: #c9d1d9;
             transition: all var(--transition-fast);
         }
-        
+       
         .badge:hover {
             background: rgba(255, 255, 255, 0.15);
             color: white;
             transform: translateY(-2px);
         }
-        
+       
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+       
+        .footer-links a {
+            color: #8b949e;
+            text-decoration: none;
+            transition: color var(--transition-fast);
+        }
+       
+        .footer-links a:hover {
+            color: var(--info-blue);
+            text-decoration: underline;
+        }
+       
         .footer-text {
             text-align: center;
             color: #8b949e;
             font-size: 0.95rem;
             max-width: 600px;
         }
-        
+       
+        .footer-credits {
+            text-align: center;
+            color: #6e7681;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+       
+        .version {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 0.5rem;
+        }
+       
         /* Responsive */
         @media (max-width: 1024px) {
             .sidebar {
                 width: 280px;
             }
-            
+           
             .main-content {
                 margin-left: 280px;
             }
-            
+           
             .site-footer {
                 margin-left: 280px;
             }
+           
+            .quick-nav {
+                display: none;
+            }
         }
-        
+       
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -655,82 +780,111 @@
                 padding: 1.5rem;
                 z-index: 800;
             }
-            
+           
             .sidebar.active {
                 transform: translateX(0);
             }
-            
+           
             .sidebar-nav {
                 flex-direction: row;
                 flex-wrap: wrap;
                 justify-content: center;
             }
-            
+           
             .nav-item {
                 min-width: 180px;
                 flex: 1;
                 justify-content: center;
             }
-            
+           
             .main-content {
                 margin-left: 0;
                 padding: 2rem 1.5rem;
             }
-            
+           
             .site-footer {
                 margin-left: 0;
             }
-            
+           
             .step-title {
                 font-size: 2.25rem;
             }
-            
+           
             .step-navigation {
                 flex-direction: column;
                 gap: 1rem;
             }
-            
+           
             .nav-btn {
                 width: 100%;
             }
-            
+           
             .site-header {
                 padding: 0 1rem;
             }
-            
+           
             .logo-text {
                 font-size: 1.2rem;
             }
-            
+           
             .progress-container {
                 flex-direction: column;
                 align-items: flex-end;
                 gap: 0.5rem;
             }
+           
+            .quick-nav {
+                display: none;
+            }
         }
-        
+       
         @media (max-width: 480px) {
             .task-card,
             .special-box {
                 padding: 1.5rem;
             }
-            
+           
             .code-block {
                 margin: 1.5rem -1rem;
                 border-radius: 0;
             }
-            
+           
             .footer-badges {
                 flex-direction: column;
                 align-items: center;
             }
-            
+           
             .badge {
                 width: 100%;
                 text-align: center;
             }
+           
+            .footer-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+           
+            .step-title {
+                font-size: 1.8rem;
+            }
         }
-        
+       
+        @media (max-width: 360px) {
+            .step-title {
+                font-size: 1.6rem;
+            }
+           
+            .task-card {
+                padding: 1rem;
+            }
+           
+            .step-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+       
         /* Toggle mobile sidebar */
         .mobile-toggle {
             display: none;
@@ -751,18 +905,18 @@
             justify-content: center;
             transition: all var(--transition-base);
         }
-        
+       
         .mobile-toggle:hover {
             transform: scale(1.1);
             background: #0a5dc2;
         }
-        
+       
         @media (max-width: 768px) {
             .mobile-toggle {
                 display: flex;
             }
         }
-        
+       
         /* Raccourcis clavier */
         .shortcut-hint {
             position: fixed;
@@ -780,7 +934,7 @@
             display: none;
             z-index: 1002;
         }
-        
+       
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -797,7 +951,7 @@
     <!-- Écran de chargement -->
     <div id="loading-screen">
         <div class="loading-logo">
-            <svg viewBox="0 0 24 24">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
             </svg>
         </div>
@@ -811,7 +965,7 @@
     <!-- Header -->
     <header class="site-header">
         <div class="logo-container">
-            <div class="logo-icon">CI/CD</div>
+            <div class="logo-icon" aria-hidden="true">CI/CD</div>
             <div class="logo-text">GitHub Actions Guide</div>
         </div>
         <div class="progress-container">
@@ -821,21 +975,24 @@
             </div>
         </div>
     </header>
-
-
+    <!-- Navigation rapide -->
+    <div class="quick-nav" aria-label="Navigation rapide">
+        <button class="quick-nav-btn" onclick="loadStep(1)">📚 Bases du CI/CD</button>
+        <button class="quick-nav-btn" onclick="loadStep(4)">🧪 Tests automatisés</button>
+        <button class="quick-nav-btn" onclick="loadStep(6)">🚀 Déploiement continu</button>
+        <button class="quick-nav-btn" onclick="resetProgress()">🔄 Réinitialiser</button>
+    </div>
     <!-- Sidebar Navigation -->
-    <nav class="sidebar" id="sidebar">
+    <nav class="sidebar" id="sidebar" aria-label="Navigation du guide" role="navigation">
         <h2 class="sidebar-title">Navigation du Guide</h2>
         <div class="sidebar-nav" id="navButtons"></div>
     </nav>
-
     <!-- Contenu principal -->
-    <main class="main-content">
+    <main class="main-content" aria-label="Contenu principal">
         <div class="step-container" id="stepContent">
             <!-- Le contenu sera injecté ici par JavaScript -->
         </div>
     </main>
-
     <!-- Footer -->
     <footer class="site-footer">
         <div class="footer-content">
@@ -847,49 +1004,39 @@
                 <span class="badge">Best Practices</span>
             </div>
             <p class="footer-text">
-                Ce guide interactif vous accompagne pas à pas dans la mise en place d'un pipeline CI/CD professionnel avec GitHub Actions.
-                Retrouvez le code source sur GitHub et n'hésitez pas à contribuer !
+                Ce guide interactif vous accompagne étape par étape dans la mise en place d'un pipeline CI/CD professionnel avec GitHub Actions.
             </p>
+            <div class="footer-links">
+                <a href="https://docs.github.com/fr/actions" target="_blank" rel="noopener noreferrer">Documentation officielle</a>
+                <a href="#" onclick="resetProgress(); return false;">Réinitialiser la progression</a>
+            </div>
+            <div class="footer-credits">
+                <p>Guide créé avec ❤️ pour la communauté DevOps</p>
+                <p class="version">Version 1.0 • <span id="currentDate"></span></p>
+            </div>
         </div>
     </footer>
-
     <!-- Bouton mobile sidebar -->
-    <button class="mobile-toggle" id="mobileToggle">☰</button>
-
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Menu de navigation" aria-expanded="false">☰</button>
     <!-- Raccourci clavier -->
-    <div class="shortcut-hint" id="shortcutHint"></div>
-
+    <div class="shortcut-hint" id="shortcutHint" aria-live="polite"></div>
     <script>
-
-         document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                const loadingProgress = document.getElementById('loadingProgress');
-                const loadingStatus = document.getElementById('loadingStatus');
-                loadingProgress.style.transition = 'width 5s linear';
-                loadingProgress.style.width = '100%';
-
-                setTimeout(() => {
-                    loadingStatus.textContent = "Préparation du tutoriel...";
-                }, 2500);
-
-                setTimeout(() => {
-                    const loadingScreen = document.getElementById('loading-screen');
-                    loadingScreen.classList.add('hidden');
-                    document.body.classList.add('loaded');
-                    initApp();
-                }, 5000);
-            }, 500);
-        }); 
-        
         // Données du guide
         const guideData = {
-            title: "Guide CI/CD avec GitHub Actions",
+            title: 'Guide CI/CD avec GitHub Actions',
             steps: [
                 {
                     id: 1,
-                    title: "Comprendre les bases de CI/CD",
-                    subtitle: "Introduction aux concepts fondamentaux",
+                    title: 'Comprendre les bases de CI/CD',
+                    subtitle: 'Introduction aux concepts fondamentaux',
+                    duration: '5 min',
+                    keywords: ['CI', 'CD', 'intégration continue', 'déploiement continu', 'concepts'],
                     content: `
+                        <div class="step-meta">
+                            <div class="meta-item">⏱️ Durée : 5 min</div>
+                            <div class="meta-item">📝 Prérequis : Aucun</div>
+                            <div class="meta-item">🏷️ Mots-clés : CI, CD, concepts</div>
+                        </div>
                         <div class="task-card">
                             <h3><span class="task-icon">1</span>Objectif de cette étape</h3>
                             <div class="special-box box-objective">
@@ -901,7 +1048,7 @@
                             </div>
                             <h3>Qu'est-ce que le CI/CD ?</h3>
                             <p>Le <strong>CI/CD (Continuous Integration/Continuous Deployment)</strong> est une pratique de développement logiciel qui permet aux équipes de livrer des changements de code plus fréquemment et de manière plus fiable.</p>
-                            
+                           
                             <div class="special-box box-context">
                                 <div class="box-title">
                                     <span class="box-icon">📚</span>
@@ -909,7 +1056,7 @@
                                 </div>
                                 <p>Avant GitHub Actions, les équipes devaient configurer des outils externes comme Jenkins, Travis CI ou CircleCI. GitHub Actions intègre directement ces fonctionnalités dans votre dépôt GitHub.</p>
                             </div>
-                            
+                           
                             <h3>Les trois piliers du CI/CD</h3>
                             <ul>
                                 <li><strong>Continuous Integration (CI)</strong> : Fusionner fréquemment le code dans une branche principale et exécuter des tests automatiques</li>
@@ -921,49 +1068,49 @@
                 },
                 {
                     id: 2,
-                    title: "Configurer son premier workflow",
-                    subtitle: "Création d'un fichier YAML et structure de base",
+                    title: 'Configurer son premier workflow',
+                    subtitle: 'Création d\'un fichier YAML et structure de base',
+                    duration: '8 min',
+                    keywords: ['workflow', 'YAML', 'structure', 'premier pas'],
                     content: `
+                        <div class="step-meta">
+                            <div class="meta-item">⏱️ Durée : 8 min</div>
+                            <div class="meta-item">📝 Prérequis : Compte GitHub</div>
+                            <div class="meta-item">🏷️ Mots-clés : workflow, YAML, structure</div>
+                        </div>
                         <div class="task-card">
                             <h3><span class="task-icon">2</span>Créer un workflow GitHub Actions</h3>
                             <p>Un workflow est un processus automatisé configuré dans votre dépôt GitHub. Il est défini par un fichier YAML placé dans le répertoire <code>.github/workflows/</code>.</p>
-                            
+                           
                             <div class="code-block">
                                 <div class="code-header">
                                     <span class="code-language">YAML</span>
-                                    <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                                    <button class="copy-btn" onclick="copyCode(this)" aria-label="Copier le code">Copier</button>
                                 </div>
-                                <pre><code class="language-yaml">name: CI Pipeline
-
+                                <pre><code class="language-yaml" lang="yaml">name: CI Pipeline
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
-
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-      
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-        
     - name: Install dependencies
       run: npm ci
-      
     - name: Run tests
       run: npm test
-      
     - name: Build project
       run: npm run build</code></pre>
                             </div>
-                            
+                           
                             <div class="special-box box-note">
                                 <div class="box-title">
                                     <span class="box-icon">💡</span>
@@ -971,7 +1118,7 @@ jobs:
                                 </div>
                                 <p>Le fichier doit obligatoirement être placé dans <code>.github/workflows/</code> et avoir l'extension <code>.yml</code> ou <code>.yaml</code>. GitHub détectera automatiquement ce fichier et exécutera le workflow selon les déclencheurs configurés.</p>
                             </div>
-                            
+                           
                             <h3>Comprendre la structure YAML</h3>
                             <ul>
                                 <li><code>name</code> : Nom du workflow affiché dans l'interface GitHub</li>
@@ -986,13 +1133,20 @@ jobs:
                 },
                 {
                     id: 3,
-                    title: "Gérer les secrets et variables",
-                    subtitle: "Sécuriser les données sensibles",
+                    title: 'Gérer les secrets et variables',
+                    subtitle: 'Sécuriser les données sensibles',
+                    duration: '6 min',
+                    keywords: ['secrets', 'variables', 'sécurité', 'tokens'],
                     content: `
+                        <div class="step-meta">
+                            <div class="meta-item">⏱️ Durée : 6 min</div>
+                            <div class="meta-item">📝 Prérequis : Étape 2</div>
+                            <div class="meta-item">🏷️ Mots-clés : secrets, sécurité, tokens</div>
+                        </div>
                         <div class="task-card">
                             <h3><span class="task-icon">3</span>Sécuriser les informations sensibles</h3>
                             <p>Les secrets (tokens API, mots de passe, clés SSH) ne doivent jamais être stockés en clair dans votre code. GitHub Actions fournit un système de secrets et de variables sécurisé.</p>
-                            
+                           
                             <div class="special-box box-note">
                                 <div class="box-title">
                                     <span class="box-icon">🔒</span>
@@ -1000,7 +1154,7 @@ jobs:
                                 </div>
                                 <p>Les secrets sont chiffrés et ne sont jamais exposés dans les logs. Ils ne peuvent être lus que par les workflows et sont propres à chaque dépôt ou organisation.</p>
                             </div>
-                            
+                           
                             <h3>Définir des secrets dans GitHub</h3>
                             <ol>
                                 <li>Allez dans les paramètres de votre dépôt GitHub</li>
@@ -1008,13 +1162,13 @@ jobs:
                                 <li>Cliquez sur "New repository secret"</li>
                                 <li>Donnez un nom et une valeur à votre secret</li>
                             </ol>
-                            
+                           
                             <div class="code-block">
                                 <div class="code-header">
                                     <span class="code-language">YAML</span>
-                                    <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                                    <button class="copy-btn" onclick="copyCode(this)" aria-label="Copier le code">Copier</button>
                                 </div>
-                                <pre><code class="language-yaml">jobs:
+                                <pre><code class="language-yaml" lang="yaml">jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
@@ -1025,10 +1179,10 @@ jobs:
       run: |
         echo "Deploying with token..."
         # Utilisation sécurisée des secrets
-        curl -H "Authorization: Bearer \$API_TOKEN" \\
+        curl -H "Authorization: Bearer $API_TOKEN" \\
              -X POST https://api.example.com/deploy</code></pre>
                             </div>
-                            
+                           
                             <h3>Variables vs Secrets</h3>
                             <ul>
                                 <li><strong>Variables</strong> : Données non sensibles (URLs, noms de fichiers, chemins)</li>
@@ -1039,73 +1193,64 @@ jobs:
                 },
                 {
                     id: 4,
-                    title: "Tests automatisés et qualité",
-                    subtitle: "Implémenter un pipeline de qualité",
+                    title: 'Tests automatisés et qualité',
+                    subtitle: 'Implémenter un pipeline de qualité',
+                    duration: '10 min',
+                    keywords: ['tests', 'qualité', 'linting', 'couverture'],
                     content: `
+                        <div class="step-meta">
+                            <div class="meta-item">⏱️ Durée : 10 min</div>
+                            <div class="meta-item">📝 Prérequis : Étape 2</div>
+                            <div class="meta-item">🏷️ Mots-clés : tests, qualité, linting</div>
+                        </div>
                         <div class="task-card">
                             <h3><span class="task-icon">4</span>Intégrer les tests automatiques</h3>
                             <p>Un pipeline CI/CD efficace doit inclure plusieurs niveaux de tests pour garantir la qualité du code avant le déploiement.</p>
-                            
+                           
                             <div class="code-block">
                                 <div class="code-header">
                                     <span class="code-language">YAML</span>
-                                    <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                                    <button class="copy-btn" onclick="copyCode(this)" aria-label="Copier le code">Copier</button>
                                 </div>
-<pre><code class="language-yaml">jobs:
+                                <pre><code class="language-yaml" lang="yaml">jobs:
   quality-checks:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
-    
     - name: Install dependencies
       run: npm ci
-    
     # Tests unitaires
     - name: Run unit tests
       run: npm run test:unit
       continue-on-error: false
-    
     # Tests d'intégration
     - name: Run integration tests
       run: npm run test:integration
-    
     # Analyse de code statique
     - name: ESLint check
       run: npm run lint
-    
     - name: TypeScript type check
       run: npx tsc --noEmit
-    
     # Tests de couverture
     - name: Test coverage
       run: npm run test:coverage
-    
     - name: Upload coverage report
       uses: codecov/codecov-action@v3</code></pre>
                             </div>
-                            
-                            <div class="special-box box-bonus">
-                                <div class="box-title">
-                                    <span class="box-icon">🚀</span>
-                                    Bonus : Tests parallèles
-                                </div>
-                                <p>Pour accélérer l'exécution des tests, vous pouvez les paralléliser en utilisant plusieurs jobs ou en divisant vos tests avec des outils comme Jest sharding.</p>
-                            </div>
-                            
+                           
                             <h3>Matrice de tests</h3>
                             <p>Testez votre application sur plusieurs environnements simultanément :</p>
-                            
+                           
                             <div class="code-block">
                                 <div class="code-header">
                                     <span class="code-language">YAML</span>
-                                    <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                                    <button class="copy-btn" onclick="copyCode(this)" aria-label="Copier le code">Copier</button>
                                 </div>
-<pre><code class="language-yaml">jobs:
+                                <pre><code class="language-yaml" lang="yaml">jobs:
   test-matrix:
     runs-on: \${{ matrix.os }}
     strategy:
@@ -1125,24 +1270,30 @@ jobs:
                 },
                 {
                     id: 5,
-                    title: "Build et artefacts",
-                    subtitle: "Compiler et stocker les builds",
+                    title: 'Build et artefacts',
+                    subtitle: 'Compiler et stocker les builds',
+                    duration: '7 min',
+                    keywords: ['build', 'artefacts', 'cache', 'optimisation'],
                     content: `
+                        <div class="step-meta">
+                            <div class="meta-item">⏱️ Durée : 7 min</div>
+                            <div class="meta-item">📝 Prérequis : Étape 2</div>
+                            <div class="meta-item">🏷️ Mots-clés : build, artefacts, cache</div>
+                        </div>
                         <div class="task-card">
                             <h3><span class="task-icon">5</span>Gérer les artefacts de build</h3>
                             <p>Les artefacts sont les fichiers générés par votre processus de build (exécutables, packages, documentation). GitHub Actions permet de les stocker et de les partager entre les jobs.</p>
-                            
+                           
                             <div class="code-block">
                                 <div class="code-header">
                                     <span class="code-language">YAML</span>
-                                    <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                                    <button class="copy-btn" onclick="copyCode(this)" aria-label="Copier le code">Copier</button>
                                 </div>
-<pre><code class="language-yaml">jobs:
+                                <pre><code class="language-yaml" lang="yaml">jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    
     - name: Build application
       run: |
         npm ci
@@ -1151,14 +1302,12 @@ jobs:
         mkdir -p dist/
         # Copie des fichiers construits
         cp -r build/* dist/
-    
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
         name: production-build
         path: dist/
         retention-days: 7
-    
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -1167,11 +1316,10 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: production-build
-    
     - name: Deploy to server
       run: ./deploy-script.sh</code></pre>
                             </div>
-                            
+                           
                             <div class="special-box box-note">
                                 <div class="box-title">
                                     <span class="box-icon">📦</span>
@@ -1179,16 +1327,16 @@ jobs:
                                 </div>
                                 <p>Les artefacts sont conservés pendant 90 jours par défaut. Vous pouvez ajuster cette durée avec le paramètre <code>retention-days</code>. La taille maximale par artefact est de 10 Go.</p>
                             </div>
-                            
+                           
                             <h3>Cache des dépendances</h3>
                             <p>Accélérez vos builds en mettant en cache les dépendances :</p>
-                            
+                           
                             <div class="code-block">
                                 <div class="code-header">
                                     <span class="code-language">YAML</span>
-                                    <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                                    <button class="copy-btn" onclick="copyCode(this)" aria-label="Copier le code">Copier</button>
                                 </div>
-<pre><code class="language-yaml">- name: Cache node modules
+                                <pre><code class="language-yaml" lang="yaml">- name: Cache node modules
   uses: actions/cache@v3
   with:
     path: ~/.npm
@@ -1201,24 +1349,29 @@ jobs:
                 },
                 {
                     id: 6,
-                    title: "Déploiement continu",
-                    subtitle: "Automatiser le déploiement en production",
+                    title: 'Déploiement continu',
+                    subtitle: 'Automatiser le déploiement en production',
+                    duration: '12 min',
+                    keywords: ['déploiement', 'production', 'staging', 'rollback'],
                     content: `
+                        <div class="step-meta">
+                            <div class="meta-item">⏱️ Durée : 12 min</div>
+                            <div class="meta-item">📝 Prérequis : Étape 5</div>
+                            <div class="meta-item">🏷️ Mots-clés : déploiement, production, rollback</div>
+                        </div>
                         <div class="task-card">
                             <h3><span class="task-icon">6</span>Pipeline de déploiement avancé</h3>
                             <p>Configurez un déploiement progressif avec des environnements de staging et production, incluant des validations manuelles et des rollbacks automatiques.</p>
-                            
+                           
                             <div class="code-block">
                                 <div class="code-header">
                                     <span class="code-language">YAML</span>
-                                    <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                                    <button class="copy-btn" onclick="copyCode(this)" aria-label="Copier le code">Copier</button>
                                 </div>
-<pre><code class="language-yaml">name: Production Deployment
-
+                                <pre><code class="language-yaml" lang="yaml">name: Production Deployment
 on:
   push:
     branches: [ main ]
-
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
@@ -1228,8 +1381,7 @@ jobs:
     - uses: actions/checkout@v3
     - run: npm ci && npm test && npm run build
     - id: test
-      run: echo "success=true" >> \$GITHUB_OUTPUT
-
+      run: echo "success=true" >> $GITHUB_OUTPUT
   deploy-to-staging:
     runs-on: ubuntu-latest
     needs: test-and-build
@@ -1242,14 +1394,12 @@ jobs:
       with:
         name: production-build
     - run: ./deploy-staging.sh
-
   manual-approval:
     runs-on: ubuntu-latest
     needs: deploy-to-staging
     if: always()
     steps:
     - run: echo "En attente d'approval manuel pour la production"
-
   deploy-to-production:
     runs-on: ubuntu-latest
     needs: manual-approval
@@ -1260,25 +1410,7 @@ jobs:
     - uses: actions/download-artifact@v3
     - run: ./deploy-production.sh</code></pre>
                             </div>
-                            
-                            <div class="special-box box-bonus">
-                                <div class="box-title">
-                                    <span class="box-icon">🔄</span>
-                                    Bonus : Rollback automatique
-                                </div>
-                                <p>Implémentez un système de rollback automatique qui se déclenche si les tests de santé (health checks) échouent après un déploiement :</p>
-                                <div class="code-block">
-<pre><code class="language-yaml">- name: Health check
-  run: |
-    response=\$(curl -s -o /dev/null -w "%{http_code}" https://example.com/health)
-    if [ "\$response" != "200" ]; then
-      echo "Health check failed, triggering rollback"
-      ./rollback.sh
-      exit 1
-    fi</code></pre>
-                                </div>
-                            </div>
-                            
+                           
                             <h3>Environnements GitHub</h3>
                             <p>Utilisez les environnements GitHub pour gérer les règles de déploiement, les secrets spécifiques et les reviewers :</p>
                             <ul>
@@ -1291,40 +1423,32 @@ jobs:
                 },
                 {
                     id: 7,
-                    title: "Optimisations avancées",
-                    subtitle: "Best practices et monitoring",
+                    title: 'Optimisations avancées',
+                    subtitle: 'Best practices et monitoring',
+                    duration: '10 min',
+                    keywords: ['optimisation', 'monitoring', 'alerting', 'best practices'],
                     content: `
+                        <div class="step-meta">
+                            <div class="meta-item">⏱️ Durée : 10 min</div>
+                            <div class="meta-item">📝 Prérequis : Toutes les étapes</div>
+                            <div class="meta-item">🏷️ Mots-clés : optimisation, monitoring, best practices</div>
+                        </div>
                         <div class="task-card">
                             <h3><span class="task-icon">7</span>Optimiser vos workflows</h3>
                             <p>Améliorez les performances, la sécurité et la maintenabilité de vos pipelines CI/CD avec ces pratiques avancées.</p>
-                            
-                            <div class="special-box box-objective">
-                                <div class="box-title">
-                                    <span class="box-icon">⚡</span>
-                                    Optimisation des performances
-                                </div>
-                                <ul>
-                                    <li><strong>Cache stratégique</strong> : Mettez en cache les dépendances, les images Docker, et les outils fréquemment utilisés</li>
-                                    <li><strong>Jobs parallèles</strong> : Exécutez les tests et les builds en parallèle quand c'est possible</li>
-                                    <li><strong>Matrix réduite</strong> : Limitez les combinaisons OS/versions aux strictes nécessités</li>
-                                    <li><strong>Événements ciblés</strong> : Utilisez <code>paths</code> pour ne déclencher les workflows que quand les fichiers concernés changent</li>
-                                </ul>
-                            </div>
-                            
+                           
                             <h3>Monitoring et alerting</h3>
                             <div class="code-block">
                                 <div class="code-header">
                                     <span class="code-language">YAML</span>
-                                    <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                                    <button class="copy-btn" onclick="copyCode(this)" aria-label="Copier le code">Copier</button>
                                 </div>
-<pre><code class="language-yaml">name: Slack Notification on Failure
-
+                                <pre><code class="language-yaml" lang="yaml">name: Slack Notification on Failure
 on:
   workflow_run:
     workflows: ["CI Pipeline"]
     types:
       - completed
-
 jobs:
   notify:
     runs-on: ubuntu-latest
@@ -1341,32 +1465,17 @@ jobs:
       env:
         SLACK_BOT_TOKEN: \${{ secrets.SLACK_BOT_TOKEN }}</code></pre>
                             </div>
-                            
-                            <div class="special-box box-bonus">
-                                <div class="box-title">
-                                    <span class="box-icon">📊</span>
-                                    Bonus : Analytics
-                                </div>
-                                <p>Utilisez l'API GitHub Actions pour collecter des métriques sur vos workflows :</p>
-                                <ul>
-                                    <li>Durée moyenne d'exécution</li>
-                                    <li>Taux de succès/échec</li>
-                                    <li>Coût estimé (pour GitHub Enterprise)</li>
-                                    <li>Temps d'attente dans la file d'exécution</li>
-                                </ul>
-                            </div>
-                            
+                           
                             <h3>Workflows réutilisables</h3>
                             <p>Créez des workflows modulaires dans <code>.github/workflows/reusable/</code> :</p>
-                            
+                           
                             <div class="code-block">
                                 <div class="code-header">
                                     <span class="code-language">YAML</span>
-                                    <button class="copy-btn" onclick="copyCode(this)">Copier</button>
+                                    <button class="copy-btn" onclick="copyCode(this)" aria-label="Copier le code">Copier</button>
                                 </div>
-<pre><code class="language-yaml"># .github/workflows/reusable/node-tests.yml
+                                <pre><code class="language-yaml" lang="yaml"># .github/workflows/reusable/node-tests.yml
 name: Reusable Node.js Tests
-
 on:
   workflow_call:
     inputs:
@@ -1376,7 +1485,6 @@ on:
     outputs:
       test-result:
         value: \${{ jobs.tests.outputs.success }}
-
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -1389,7 +1497,7 @@ jobs:
         node-version: \${{ inputs.node-version }}
     - run: npm ci && npm test
     - id: test
-      run: echo "result=success" >> \$GITHUB_OUTPUT</code></pre>
+      run: echo "result=success" >> $GITHUB_OUTPUT</code></pre>
                             </div>
                         </div>
                     `
@@ -1401,44 +1509,109 @@ jobs:
         let currentStep = 1;
         const totalSteps = guideData.steps.length;
 
-        // Initialisation
-        document.addEventListener('DOMContentLoaded', () => {
-            initNavigation();
-            loadStep(currentStep);
-            setupKeyboardShortcuts();
-            updateProgressBar();
-            
-            // Mobile toggle
-            document.getElementById('mobileToggle').addEventListener('click', () => {
-                document.getElementById('sidebar').classList.toggle('active');
-            });
-            
-            // Fermer sidebar mobile en cliquant à l'extérieur
-            document.addEventListener('click', (e) => {
-                const sidebar = document.getElementById('sidebar');
-                const toggle = document.getElementById('mobileToggle');
-                if (window.innerWidth <= 768 && sidebar.classList.contains('active') && 
-                    !sidebar.contains(e.target) && !toggle.contains(e.target)) {
-                    sidebar.classList.remove('active');
-                }
-            });
+        // Initialisation simplifiée
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mettre à jour la date
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('fr-FR');
+           
+            // Simuler le chargement
+            const loadingProgress = document.getElementById('loadingProgress');
+            const loadingStatus = document.getElementById('loadingStatus');
+           
+            loadingProgress.style.transition = 'width 5s linear';
+            loadingProgress.style.width = '100%';
+           
+            setTimeout(function() {
+                loadingStatus.textContent = 'Préparation du tutoriel...';
+            }, 2500);
+           
+            setTimeout(function() {
+                const loadingScreen = document.getElementById('loading-screen');
+                loadingScreen.classList.add('hidden');
+                document.body.classList.add('loaded');
+               
+                // Initialiser l'app après le chargement
+                initApp();
+            }, 5000);
         });
+
+        // Initialiser l'application
+        function initApp() {
+            try {
+                // Charger la progression sauvegardée
+                const savedStep = localStorage.getItem('ciCdGuideProgress');
+                if (savedStep) {
+                    const stepNum = parseInt(savedStep);
+                    if (!isNaN(stepNum) && stepNum >= 1 && stepNum <= totalSteps) {
+                        currentStep = stepNum;
+                    }
+                }
+               
+                // Initialiser la navigation
+                initNavigation();
+               
+                // Charger la première étape
+                loadStep(currentStep);
+               
+                // Configurer les raccourcis clavier
+                setupKeyboardShortcuts();
+               
+                // Configurer le bouton mobile
+                const mobileToggle = document.getElementById('mobileToggle');
+                if (mobileToggle) {
+                    mobileToggle.addEventListener('click', function() {
+                        const sidebar = document.getElementById('sidebar');
+                        const isExpanded = sidebar.classList.toggle('active');
+                        mobileToggle.setAttribute('aria-expanded', isExpanded);
+                    });
+                }
+               
+                // Fermer sidebar mobile en cliquant à l'extérieur
+                document.addEventListener('click', function(e) {
+                    const sidebar = document.getElementById('sidebar');
+                    const toggle = document.getElementById('mobileToggle');
+                    if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('active') &&
+                        toggle && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                        sidebar.classList.remove('active');
+                        toggle.setAttribute('aria-expanded', 'false');
+                    }
+                });
+               
+            } catch (error) {
+                console.error('Erreur lors de l\'initialisation :', error);
+                // Fallback : afficher directement le contenu
+                document.body.classList.add('loaded');
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) loadingScreen.style.display = 'none';
+                loadStep(1);
+            }
+        }
 
         // Initialiser la navigation
         function initNavigation() {
             const navContainer = document.getElementById('navButtons');
-            guideData.steps.forEach((step, index) => {
+            if (!navContainer) return;
+           
+            navContainer.innerHTML = '';
+           
+            guideData.steps.forEach(function(step, index) {
                 const button = document.createElement('button');
-                button.className = `nav-item ${index + 1 === currentStep ? 'active' : ''}`;
+                button.className = 'nav-item';
+                if (index + 1 === currentStep) {
+                    button.classList.add('active');
+                }
                 button.innerHTML = `
                     <span class="nav-number">${step.id}</span>
                     <span class="nav-text">${step.title}</span>
                 `;
-                button.addEventListener('click', () => {
+                button.addEventListener('click', function() {
                     loadStep(step.id);
                     // Fermer sidebar mobile après sélection
                     if (window.innerWidth <= 768) {
-                        document.getElementById('sidebar').classList.remove('active');
+                        const sidebar = document.getElementById('sidebar');
+                        if (sidebar) sidebar.classList.remove('active');
+                        const toggle = document.getElementById('mobileToggle');
+                        if (toggle) toggle.setAttribute('aria-expanded', 'false');
                     }
                 });
                 navContainer.appendChild(button);
@@ -1448,14 +1621,19 @@ jobs:
         // Charger une étape
         function loadStep(stepId) {
             currentStep = stepId;
-            const step = guideData.steps.find(s => s.id === stepId);
+            const step = guideData.steps.find(function(s) { return s.id === stepId; });
             const container = document.getElementById('stepContent');
-            
+           
+            if (!container || !step) return;
+           
+            // Sauvegarder la progression
+            localStorage.setItem('ciCdGuideProgress', currentStep);
+           
             // Animation de sortie
             container.style.opacity = '0';
             container.style.transform = 'translateX(20px)';
-            
-            setTimeout(() => {
+           
+            setTimeout(function() {
                 container.innerHTML = `
                     <h1 class="step-title">${step.title}</h1>
                     <p class="step-subtitle">${step.subtitle}</p>
@@ -1470,19 +1648,19 @@ jobs:
                         </button>
                     </div>
                 `;
-                
+               
                 // Mettre à jour la navigation
                 updateNavButtons();
                 updateProgressBar();
-                
+               
                 // Animation d'entrée
                 container.style.opacity = '1';
                 container.style.transform = 'translateX(0)';
                 container.style.transition = 'opacity 300ms ease, transform 300ms ease';
-                
+               
                 // Appliquer la syntaxe highlight aux blocs de code
                 highlightCodeBlocks();
-                
+               
                 // Faire défiler vers le haut
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }, 150);
@@ -1503,8 +1681,12 @@ jobs:
 
         // Mettre à jour les boutons de navigation
         function updateNavButtons() {
-            document.querySelectorAll('.nav-item').forEach((item, index) => {
-                item.classList.toggle('active', index + 1 === currentStep);
+            document.querySelectorAll('.nav-item').forEach(function(item, index) {
+                if (index + 1 === currentStep) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
             });
         }
 
@@ -1512,38 +1694,78 @@ jobs:
         function updateProgressBar() {
             const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
             const progressFill = document.getElementById('progressFill');
-            progressFill.style.width = `${progress}%`;
+            if (progressFill) {
+                progressFill.style.width = progress + '%';
+            }
         }
 
         // Copier le code
         function copyCode(button) {
-            const codeBlock = button.closest('.code-block');
-            const code = codeBlock.querySelector('code').textContent;
-            
-            navigator.clipboard.writeText(code).then(() => {
-                button.classList.add('copied');
-                button.textContent = '';
-                setTimeout(() => {
-                    button.classList.remove('copied');
-                    button.textContent = 'Copier';
-                }, 2000);
-            }).catch(err => {
-                console.error('Erreur lors de la copie :', err);
-                button.textContent = 'Erreur';
-                setTimeout(() => {
-                    button.textContent = 'Copier';
-                }, 2000);
-            });
+            try {
+                const codeBlock = button.closest('.code-block');
+                if (!codeBlock) return;
+               
+                const code = codeBlock.querySelector('code').textContent;
+               
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(code).then(function() {
+                        button.classList.add('copied');
+                        button.textContent = '';
+                        setTimeout(function() {
+                            button.classList.remove('copied');
+                            button.textContent = 'Copier';
+                        }, 2000);
+                    }).catch(function(err) {
+                        console.error('Erreur lors de la copie :', err);
+                        button.textContent = 'Erreur';
+                        setTimeout(function() {
+                            button.textContent = 'Copier';
+                        }, 2000);
+                    });
+                } else {
+                    console.warn('Clipboard API non disponible');
+                    button.textContent = 'Non supporté';
+                    setTimeout(function() {
+                        button.textContent = 'Copier';
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Erreur dans copyCode :', error);
+            }
         }
 
-        // Raccourcis clavier
+        // Réinitialiser la progression
+        function resetProgress() {
+            if (confirm('Voulez-vous vraiment réinitialiser votre progression ?')) {
+                localStorage.removeItem('ciCdGuideProgress');
+                currentStep = 1;
+                loadStep(currentStep);
+                updateProgressBar();
+                showHint('Progression réinitialisée !');
+            }
+        }
+
+        // Afficher un hint
+        function showHint(message) {
+            const hintElement = document.getElementById('shortcutHint');
+            if (!hintElement) return;
+           
+            hintElement.textContent = message;
+            hintElement.style.display = 'block';
+           
+            setTimeout(function() {
+                hintElement.style.display = 'none';
+            }, 2000);
+        }
+
+        // Configurer les raccourcis clavier
         function setupKeyboardShortcuts() {
-            document.addEventListener('keydown', (e) => {
+            document.addEventListener('keydown', function(e) {
                 // Ignorer si l'utilisateur est dans un champ de saisie
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-                
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+               
                 let hint = '';
-                
+               
                 switch(e.key) {
                     case 'ArrowLeft':
                         if (currentStep > 1) {
@@ -1572,28 +1794,27 @@ jobs:
                         break;
                     case 'm':
                         if (window.innerWidth <= 768) {
-                            document.getElementById('sidebar').classList.toggle('active');
-                            hint = 'Menu de navigation';
+                            const sidebar = document.getElementById('sidebar');
+                            const toggle = document.getElementById('mobileToggle');
+                            if (sidebar && toggle) {
+                                const isExpanded = sidebar.classList.toggle('active');
+                                toggle.setAttribute('aria-expanded', isExpanded);
+                                hint = isExpanded ? 'Menu ouvert' : 'Menu fermé';
+                            }
                         }
                         break;
                 }
-                
+               
                 // Afficher le hint
                 if (hint) {
-                    const hintElement = document.getElementById('shortcutHint');
-                    hintElement.textContent = hint;
-                    hintElement.style.display = 'block';
-                    
-                    setTimeout(() => {
-                        hintElement.style.display = 'none';
-                    }, 1500);
+                    showHint(hint);
                 }
             });
         }
 
         // Highlight syntaxique simple
         function highlightCodeBlocks() {
-            document.querySelectorAll('code.language-yaml').forEach(block => {
+            document.querySelectorAll('code.language-yaml').forEach(function(block) {
                 const code = block.textContent;
                 let highlighted = code
                     .replace(/(\s*)(name:|on:|jobs:|steps:|uses:|run:|with:|env:|if:|needs:|strategy:|matrix:|outputs:)/g, '$1<span class="hljs-keyword">$2</span>')
